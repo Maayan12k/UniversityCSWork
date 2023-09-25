@@ -1,0 +1,2 @@
+extern bubble_sort
+extern swap
