@@ -1,0 +1,18 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+
+
+/** 
+ * If z =1, then out[16] = 0 else out[16] = out[16]
+ */
+
+CHIP Zero16 {
+
+    IN  sel, in[16];
+    OUT out[16];
+
+    PARTS:
+	Mux16(a=in, b=false, sel = sel, out = out);
+	
+}
