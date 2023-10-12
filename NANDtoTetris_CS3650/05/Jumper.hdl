@@ -1,0 +1,75 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/05/CPU.hdl
+
+/**
+ * This chip will jump based on the given inputs described in the book the elements of computing systems. It will be used in
+ * the CPU chip do determine when we will load the A Register into the program counter. This was constructed using a karnaugh
+ * karnaugh map
+ */
+
+CHIP Jumper {
+
+						//ASSUMPTION: zr and ng cannot simultaneously be asserted
+    IN  zr,					//ALU output, if ALU output = 0 then zr = 1
+	 ng,					//ALU output, if ALU output < 0 then ng = 1 
+	 j1,					//bit J1 from instruction 
+        j2,					//bit J2 from instruction
+	 j3;					//bit j3 from instruction
+
+    OUT out;				//this out will go to program counter
+
+    PARTS:
+
+	Not(in = ng, out = NOTng);
+	Not(in = zr, out = NOTzr);
+	Not(in = j1, out = NOTj1);
+	Not(in = j3, out = NOTj3);
+
+
+	And(a = NOTj1, b = j3, out = and1Out);
+	And(a = NOTzr, b = NOTng, out = and2Out);
+	And(a = and1Out, b = and2Out, out = and3Out);
+
+	And(a = NOTng, b = NOTj1, out = and4Out);
+	And(a = j2, b = j3, out = and5Out);
+	And(a = and4Out, b = and5Out, out = and6Out);
+
+	And(a = NOTj1, b = j2, out = and7Out);
+	And(a = zr, b = NOTng, out = and8Out);
+	And(a = and7Out, b = and8Out, out = and9Out);
+
+	And(a = NOTj3, b = j2, out = and10Out);
+	And(a = zr, b = NOTng, out = and11Out);
+	And(a = and10Out, b = and11Out, out = and12Out);
+
+	And(a = j1, b = NOTj3, out = and13Out);
+	And(a = ng, b = NOTzr, out = and14Out);
+	And(a = and13Out, b = and14Out, out = and15Out);
+
+	And(a = NOTng, b = j1, out = and16Out);
+	And(a = j2, b = j3, out = and17Out);
+	And(a = and16Out, b = and17Out, out = and18Out);
+
+	And(a = NOTzr, b = j1, out = and19Out);
+	And(a = and19Out, b = j3, out = and20Out);
+
+
+	Or(a = and3Out, b = and6Out, out = Or1Out);
+	Or(a = and9Out, b = and12Out, out = Or2Out);
+	Or(a = and15Out, b = and18Out, out = Or3Out);
+	Or(a = Or3Out, b = and20Out, out = Or4Out);
+
+	Or(a = Or1Out, b = Or2Out, out = Or5Out);
+	Or(a = Or4Out, b = Or5Out, out = out);
+
+	
+	
+
+
+
+
+
+
+}
