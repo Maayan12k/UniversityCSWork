@@ -9,7 +9,7 @@ public class Parser {
     Code decoder = new Code();
     File file;
 
-    File fileOut = new File("Prog.hack");
+    File fileOut = new File("RectL.hack");
     Scanner scanny;
     SymbolTable simbo = new SymbolTable();
 
@@ -18,7 +18,7 @@ public class Parser {
     int numOfVariables = 16;
 
     public static void main(String[] args) throws FileNotFoundException, IOException {
-        Parser parsy = new Parser("Max.asm");
+        Parser parsy = new Parser("RectL.asm");
     }
 
     public Parser(String fileName) throws FileNotFoundException, IOException {
