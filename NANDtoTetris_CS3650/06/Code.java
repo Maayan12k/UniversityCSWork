@@ -1,5 +1,6 @@
 public class Code {
 
+    // This method translates the destination mnemonic to its binary representation
     public String dest(String mnemonic) {
         switch (mnemonic) {
             case "null":
@@ -23,6 +24,7 @@ public class Code {
         }
     }
 
+    // This method translates the computation mnemonic to its binary representation
     public String comp(String mnemonic) {
         switch (mnemonic) {
             case "0":
@@ -87,6 +89,7 @@ public class Code {
 
     }
 
+    // This method translates the jump mnemonic to its binary representation
     public String jump(String mnemonic) {
         switch (mnemonic) {
             case "null":

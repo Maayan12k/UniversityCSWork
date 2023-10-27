@@ -6,24 +6,32 @@ import java.io.IOException;
 
 public class Parser {
 
-    Code decoder = new Code();
-    File file;
+    Code decoder = new Code(); // Helper object for decoding mnemonics into binary
 
-    File fileOut = new File("RectL.hack");
-    Scanner scanny;
-    SymbolTable simbo = new SymbolTable();
+    File file; // Input file to be parsed
 
-    String currentCommand;
-    FileWriter outputFile = new FileWriter(fileOut);
-    int numOfVariables = 16;
+    String outputFileName;
 
-    public static void main(String[] args) throws FileNotFoundException, IOException {
-        Parser parsy = new Parser("RectL.asm");
-    }
+    File fileOut = new File(outputFileName); // Output file for binary results
 
-    public Parser(String fileName) throws FileNotFoundException, IOException {
+    Scanner scanny; // Scanner to read the input file
+
+    SymbolTable simbo = new SymbolTable(); // Symbol table for handling labels and variables
+
+    String currentCommand; // Holds the current command being parsed
+
+    FileWriter outputFile = new FileWriter(fileOut); // FileWriter to write to the output file
+
+    int numOfVariables = 16; // Number of variables encountered so far (starts from address 16)
+
+    // Constructor: Takes a fileName as input, initializes the scanner, and
+    // processes the file
+    public Parser(String fileName, String outFileName) throws FileNotFoundException, IOException {
+        this.outputFileName = outFileName;
         file = new File(fileName);
         scanny = new Scanner(file);
+
+        // First pass: Count commands and populate the symbol table with labels
         String currentCommandType;
         int ROMCounter = 0;
         while (hasMoreCommands() == true) {
@@ -41,8 +49,9 @@ public class Parser {
             }
         }
         scanny.close();
-        scanny = new Scanner(file);
+        scanny = new Scanner(file); // Resetting the scanner to re-process the file
 
+        // Second pass: Translate commands to binary and handle symbols
         while (hasMoreCommands() == true) {
             currentCommandType = commandType();
             if (currentCommandType != "COMMENT") {
@@ -79,6 +88,7 @@ public class Parser {
 
     }
 
+    // Converts an integer to its binary representation with a fixed bit count
     public String convertToUnsignedBinaryString(int number, int bitCount) {
 
         StringBuilder binaryStringBuilder = new StringBuilder();
@@ -93,10 +103,12 @@ public class Parser {
         return binaryStringBuilder.toString();
     }
 
+    // Checks if there are more commands in the input file to process
     public boolean hasMoreCommands() {
         return scanny.hasNextLine();
     }
 
+    // Determines the type of the current command
     public String commandType() {
         currentCommand = scanny.nextLine().trim();
         if (currentCommand.startsWith("/"))
@@ -112,6 +124,7 @@ public class Parser {
 
     }
 
+    // Retrieves the address or symbol from an A_COMMAND
     public int symbol() {
         int indexOfAtSign = currentCommand.indexOf("@");
         int aCommandButNumbers;
@@ -147,11 +160,13 @@ public class Parser {
     }
 
     // This will serve as a divider even though it is called dest
+    // additionally Extracts the dest mnemonic from a C_COMMAND
     public String dest(String divider) {
         int indexOfDivider = currentCommand.indexOf(divider);
         return currentCommand.substring(0, indexOfDivider);
     }
 
+    // Extracts the comp mnemonic from a C_COMMAND
     public String comp() {
         int indexOfEqualSign = currentCommand.indexOf("=");
         if (currentCommand.contains("/")) {
@@ -161,6 +176,7 @@ public class Parser {
         return currentCommand.substring(indexOfEqualSign + 1).trim();
     }
 
+    // Extracts the jump mnemonic from a C_COMMAND
     public String jump() {
         int indexOfSemiColon = currentCommand.indexOf(";");
         if (currentCommand.contains("/")) {
