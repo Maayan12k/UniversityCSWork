@@ -37,6 +37,7 @@ public class Parser {
     File file; // Input file to be parsed
     Scanner scanny; // Scanner to read the input file
     String currentCommand; // Holds the current command being parsed
+    String currentCommandType;
 
     public Parser(String fileName) throws FileNotFoundException {
         file = new File(fileName);
@@ -51,6 +52,7 @@ public class Parser {
     // update currentCommand global variable with next vm instruction
     public void advance() {
         currentCommand = scanny.nextLine().trim();
+        currentCommandType = commandType();
     }
 
     // Determines the type of the current command or detects comment or empty line
@@ -86,16 +88,16 @@ public class Parser {
     // returns the first argument, output will depend upon what type of command
     // currentCommand is.
     public String arg1() {
-        if (currentCommand == "C_POP")
+        if (currentCommandType == "C_POP")
             return currentCommand.substring(4, currentCommand.indexOf(" ", 4));
 
-        else if (currentCommand == "C_PUSH")
+        else if (currentCommandType == "C_PUSH")
             return currentCommand.substring(5, currentCommand.indexOf(" ", 5));
 
-        else if (currentCommand == "C_ARITHMETIC")
+        else if (currentCommandType == "C_ARITHMETIC")
             return currentCommand;
 
-        else if (currentCommand == "C_LABEL" || currentCommand == "C_GOTO" || currentCommand == "C_IF")
+        else if (currentCommandType == "C_LABEL" || currentCommandType == "C_GOTO" || currentCommandType == "C_IF")
             return currentCommand.substring(currentCommand.indexOf(" ") + 1);
 
         else
@@ -108,7 +110,7 @@ public class Parser {
     public int arg2() {
         int firstSpace = currentCommand.indexOf(" ");
         int secondSpace = currentCommand.indexOf(" ", firstSpace + 1);
-        return Integer.parseInt(currentCommand.substring(secondSpace));
+        return Integer.parseInt(currentCommand.substring(secondSpace).trim());
     }
 
 }
