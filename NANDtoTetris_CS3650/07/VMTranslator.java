@@ -1,34 +1,69 @@
+import java.io.File;
 import java.io.IOException;
 
 public class VMTranslator {
 
     Parser parsy;
     CodeWriter coder;
+    String outFileName;
+    File fileOut = new File(outFileName); // Output file for assembly code
 
     public static void main(String[] args) throws IOException {
-        new VMTranslator("StackTest.vm", "StackTest.asm");
+
+        File directory = new File("null");
+        VMTranslator entry = new VMTranslator();
+
+        if (directory.exists() && directory.isDirectory()) {
+            File[] files = directory.listFiles();
+            if (files != null) {
+                entry.coder.writeInit();
+                for (File file : files) {
+                    if (file.isFile()) {
+                        entry = new VMTranslator(file.getName() + ".vm", file.getName() + ".asm");
+                    }
+                }
+            }
+        } else {
+            entry.coder.writeInit();
+            entry = new VMTranslator(directory.getName() + ".vm", directory.getName() + ".asm");
+            entry.coder.close();
+        }
+        entry.coder.close();
+    }
+
+    public VMTranslator() {
     }
 
     public VMTranslator(String inputFileName, String outputFileName) throws IOException {
+        outFileName = outputFileName;
         parsy = new Parser(inputFileName);
-        coder = new CodeWriter(inputFileName, outputFileName);
+        coder = new CodeWriter(inputFileName, outputFileName, fileOut);
         String currentCommandType;
-        String arg1;
-        int arg2;
 
         while (parsy.hasMoreCommands()) {
             parsy.advance();
             currentCommandType = parsy.commandType();
-            if (currentCommandType == "C_PUSH" || currentCommandType == "C_POP") {
-                arg1 = parsy.arg1();
-                arg2 = parsy.arg2();
-                coder.writePushPop(currentCommandType, arg1, arg2);
-            } else if (currentCommandType == "C_ARITHMETIC") {
-                arg1 = parsy.arg1();
-                coder.writeArithmetic(arg1);
+            if (currentCommandType.equals("C_PUSH") || currentCommandType.equals("C_POP")) {
+                coder.writePushPop(currentCommandType, parsy.arg1(), parsy.arg2());
+            } else if (currentCommandType.equals("C_ARITHMETIC")) {
+                coder.writeArithmetic(parsy.arg1());
+            } else if (currentCommandType.equals("C_LABEL")) {
+                coder.writeLabel(parsy.arg1());
+            } else if (currentCommandType.equals("C_GOTO")) {
+                coder.writeGoto(parsy.arg1());
+            } else if (currentCommandType.equals("C_IF")) {
+                coder.writeIf(parsy.arg1());
+            } else if (currentCommandType.equals("C_FUNCTION")) {
+                coder.writeFunction(parsy.arg1(), parsy.arg2());
+            } else if (currentCommandType.equals("C_CALL")) {
+                coder.writeCall(parsy.arg1(), parsy.arg2());
+            } else if (currentCommandType.equals("C_RETURN")) {
+                coder.writeReturn();
+            } else if (currentCommandType.equals("COMMENT") || currentCommandType.equals("EMPTY_LINE")) {
+
             }
         }
-        coder.close();
+
     }
 
 }

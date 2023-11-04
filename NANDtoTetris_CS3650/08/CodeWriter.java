@@ -35,18 +35,21 @@ public class CodeWriter {
     String vmFileName;
     int numOfFunctionCalls;
     int numForUnique;
+    File outFile;
 
     FileWriter outputFile; // FileWriter to write to the output file
 
-    public CodeWriter(String vmInputFileName, String outputFileNameString, File actualOutPutFile) throws IOException {
+    public CodeWriter(String vmInputFileName, String outputFileNameString) throws IOException {
         vmFileName = vmInputFileName.substring(0, vmInputFileName.indexOf("."));
-        setFileName(outputFileNameString, actualOutPutFile);
+        setFileName(outputFileNameString);
+        writeInit();
     }
 
     // Set the output file name and initialize FileWriter
-    public void setFileName(String outFileName, File outputFileActual) throws IOException {
+    public void setFileName(String outFileName) throws IOException {
+        outFile = new File(outFileName);
         outputFileName = outFileName;
-        outputFile = new FileWriter(outputFileActual);
+        outputFile = new FileWriter(outFile);
     }
 
     // Write assembly code for arithmetic operations
@@ -114,7 +117,7 @@ public class CodeWriter {
 
     // Write assembly code for push and pop operations
     public void writePushPop(String command, String segment, int index) throws IOException {
-        if (command == "C_PUSH") {
+        if (command.equals("C_PUSH")) {
             if (segment.equals("constant")) {
                 outputFile.write("@" + index + "\n" + "D=A" + "\n" + "@SP" + "\n"
                         + "A=M" + "\n" + "M=D" + "\n"
@@ -167,41 +170,41 @@ public class CodeWriter {
                         + "\n" + "M=M+1" + "\n");
             }
         } else {
-            if (segment == "local") {
+            if (segment.equals("local")) {
                 outputFile.write("@SP" + "\n" + "AM=M-1" + "\n" + "D=M" + "\n" + "@R13"
                         + "\n" + "M=D" + "\n" + "@LCL" + "\n" + "D=M"
                         + "\n" + "@" + index + "\n" + "D=D+A" + "\n" + "@R14"
                         + "\n" + "M=D" + "\n" + "@R13" + "\n" + "D=M"
                         + "\n" + "@R14" + "\n" + "A=M" + "\n" + "M=D" + "\n");
-            } else if (segment == "argument") {
+            } else if (segment.equals("argument")) {
                 outputFile.write("@SP" + "\n" + "AM=M-1" + "\n" + "D=M" + "\n" + "@R13"
                         + "\n" + "M=D" + "\n" + "@ARG" + "\n" + "D=M"
                         + "\n" + "@" + index + "\n" + "D=D+A" + "\n" + "@R14"
                         + "\n" + "M=D" + "\n" + "@R13" + "\n" + "D=M"
                         + "\n" + "@R14" + "\n" + "A=M" + "\n" + "M=D" + "\n");
 
-            } else if (segment == "this") {
+            } else if (segment.equals("this")) {
                 outputFile.write("@SP" + "\n" + "AM=M-1" + "\n" + "D=M" + "\n" + "@R13"
                         + "\n" + "M=D" + "\n" + "@THIS" + "\n" + "D=M"
                         + "\n" + "@" + index + "\n" + "D=D+A" + "\n" + "@R14"
                         + "\n" + "M=D" + "\n" + "@R13" + "\n" + "D=M"
                         + "\n" + "@R14" + "\n" + "A=M" + "\n" + "M=D" + "\n");
 
-            } else if (segment == "that") {
+            } else if (segment.equals("that")) {
                 outputFile.write("@SP" + "\n" + "AM=M-1" + "\n" + "D=M" + "\n" + "@R13"
                         + "\n" + "M=D" + "\n" + "@THAT" + "\n" + "D=M"
                         + "\n" + "@" + index + "\n" + "D=D+A" + "\n" + "@R14"
                         + "\n" + "M=D" + "\n" + "@R13" + "\n" + "D=M"
                         + "\n" + "@R14" + "\n" + "A=M" + "\n" + "M=D" + "\n");
 
-            } else if (segment == "pointer") {
+            } else if (segment.equals("pointer")) {
                 outputFile.write("@SP" + "\n" + "AM=M-1" + "\n" + "D=M" + "\n" + "@R13"
                         + "\n" + "M=D" + "\n" + "@3" + "\n" + "D=A"
                         + "\n" + "@" + index + "\n" + "D=D+A" + "\n" + "@R14"
                         + "\n" + "M=D" + "\n" + "@R13" + "\n" + "D=M"
                         + "\n" + "@R14" + "\n" + "A=M" + "\n" + "M=D" + "\n");
 
-            } else if (segment == "temp") {
+            } else if (segment.equals("temp")) {
                 outputFile.write("@SP" + "\n" + "AM=M-1" + "\n" + "D=M" + "\n" + "@R13"
                         + "\n" + "M=D" + "\n" + "@5" + "\n" + "D=A"
                         + "\n" + "@" + index + "\n" + "D=D+A" + "\n" + "@R14"
