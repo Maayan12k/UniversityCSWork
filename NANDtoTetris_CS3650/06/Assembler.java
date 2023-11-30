@@ -34,7 +34,7 @@ public class Assembler {
     }
 
     public Assembler(String fileName, String binaryCodeFileName) throws FileNotFoundException, IOException {
-        new Parser(fileName, binaryCodeFileName);
+        // new Parser(fileName, binaryCodeFileName);
     }
 
 }

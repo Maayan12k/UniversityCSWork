@@ -31,9 +31,6 @@ public class VMTranslator {
         entry.coder.close();
     }
 
-    public VMTranslator() {
-    }
-
     public VMTranslator(String inputFileName, String outputFileName) throws IOException {
         outFileName = outputFileName;
         parsy = new Parser(inputFileName);

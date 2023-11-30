@@ -1,4 +1,6 @@
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * This class represents a Virtual Machine (VM) translator. It translates VM
@@ -28,6 +30,32 @@ public class VMTranslator {
 
     Parser parsy;
     CodeWriter coder;
+
+    /**
+     * Return all the .vm files in a directory
+     * 
+     * @param dir
+     * @return
+     */
+    public static ArrayList<File> getVMFiles(File dir) {
+
+        File[] files = dir.listFiles();
+
+        ArrayList<File> result = new ArrayList<File>();
+
+        for (File f : files) {
+
+            if (f.getName().endsWith(".vm")) {
+
+                result.add(f);
+
+            }
+
+        }
+
+        return result;
+
+    }
 
     public static void main(String[] args) throws IOException {
 
