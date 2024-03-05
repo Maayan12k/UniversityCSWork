@@ -12,6 +12,8 @@ import java.io.File;
  * Description: This class will implement the Guassian Elimination algorithm to solve a system of linear equations.
  */
 import java.io.FileNotFoundException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class GuassianElimination {
     private double[][] coefficientMatrix;
@@ -24,7 +26,42 @@ public class GuassianElimination {
     private File file;
 
     public static void main(String[] args) throws FileNotFoundException {
-        GuassianElimination ge = new GuassianElimination("input.txt");
+        Scanner scanny = new Scanner(System.in);
+        int option;
+        System.out.println("Guassian Elimination Calculator");
+        System.out.println("Please make a selection, enter '1' for option 1 or '2' for option 2.");
+        System.out.println("1) Manual input");
+        System.out.println("2) input file");
+        System.out.println("Enter your choice: ");
+        option = scanny.nextInt();
+
+        while (!(option == 1) && !(option == 2)) {
+            System.out.println("Please make a correct selection: ");
+            option = scanny.nextInt();
+        }
+
+        if (option == 1) {
+            new GuassianElimination();
+        } else if (option == 2) {
+            System.out.println("Please enter the name of a file in the current directory: ");
+            String name = scanny.next();
+
+            Pattern patty = Pattern.compile(".*\\..*");
+            Matcher matcher = patty.matcher(name);
+
+            if (matcher.find()) {
+                new GuassianElimination(matcher.group());
+            } else {
+                while (!matcher.find()) {
+                    System.out.println("Please enter a valid fileName:   ");
+                    name = scanny.next();
+                    matcher = patty.matcher(name);
+                }
+                new GuassianElimination(matcher.group());
+
+            }
+
+        }
 
     }
 
@@ -115,7 +152,7 @@ public class GuassianElimination {
     public void solve() {
         int pivotRow = -1;
 
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i <= size; i++) {
             pivotRow = findPivotRow(i);
             pivotsUsedInOrder.add(pivotRow);
             rowsNotUsedAsPivotsYet.remove((Integer) pivotRow);
@@ -126,31 +163,36 @@ public class GuassianElimination {
                 for (int k = i; k <= size; k++) {
                     if (k < size) {
 
-                        coefficientMatrix[rowToBeAltered][k] += -firstElementInRowToBeAltered
-                                * coefficientMatrix[pivotRow][k] / firstElementInPivotRow;
+                        coefficientMatrix[rowToBeAltered][k] = new BigDecimal(
+                                coefficientMatrix[rowToBeAltered][k] + (-firstElementInRowToBeAltered
+                                        * coefficientMatrix[pivotRow][k] / firstElementInPivotRow))
+                                .setScale(3, RoundingMode.HALF_UP).doubleValue();
 
                     } else if (k == size) {// constant vector alteration performed here.
 
-                        constantVector[rowToBeAltered] += -firstElementInRowToBeAltered * constantVector[pivotRow]
-                                / firstElementInPivotRow;
+                        constantVector[rowToBeAltered] = new BigDecimal(constantVector[rowToBeAltered]
+                                + (-firstElementInRowToBeAltered * constantVector[pivotRow]
+                                        / firstElementInPivotRow))
+                                .setScale(3, RoundingMode.HALF_UP).doubleValue();
 
                     }
 
                 }
 
             }
-            System.out.println("Iteration: " + i);
+            System.out.println("Iteration: " + (i + 1));
             for (int l = 0; l < size; l++) {
                 System.out.println(Arrays.toString(coefficientMatrix[l]));
             }
-            System.out.println("Constant Vector: " + Arrays.toString(constantVector) + "\n");
+            System.out.println("CV: " + Arrays.toString(constantVector) + "\n");
 
         }
 
-        solutionVector[pivotRow] = constantVector[pivotRow] / coefficientMatrix[pivotRow][size - 1];
+        // solutionVector[pivotRow] = constantVector[pivotRow] /
+        // coefficientMatrix[pivotRow][size - 1];
         double tempSolution = 0;
         double divider = 0;
-        for (int i = size - 2; i >= 0; i--) {
+        for (int i = size - 1; i >= 0; i--) {
             pivotRow = pivotsUsedInOrder.get(i);
             tempSolution = constantVector[pivotRow];
             for (int k = i; k < size; k++) {
@@ -161,7 +203,9 @@ public class GuassianElimination {
                 }
 
             }
-            solutionVector[i] = tempSolution / divider;
+
+            solutionVector[i] = new BigDecimal(tempSolution / divider)
+                    .setScale(3, RoundingMode.HALF_UP).doubleValue();
 
         }
         System.out.println("Solution Vector: " + Arrays.toString(solutionVector));
