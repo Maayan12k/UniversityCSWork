@@ -62,7 +62,7 @@ public class GuassianElimination {
             }
 
         }
-
+        scanny.close();
     }
 
     // Constuctor that invoked the coefficient matrix from a stdin
@@ -152,7 +152,8 @@ public class GuassianElimination {
     public void solve() {
         int pivotRow = -1;
 
-        for (int i = 0; i <= size; i++) {
+        for (int i = 0; i < size; i++) {
+            System.out.println("Iteration: " + (i + 1));
             pivotRow = findPivotRow(i);
             pivotsUsedInOrder.add(pivotRow);
             rowsNotUsedAsPivotsYet.remove((Integer) pivotRow);
@@ -180,7 +181,8 @@ public class GuassianElimination {
                 }
 
             }
-            System.out.println("Iteration: " + (i + 1));
+
+            System.out.println("Pivot Row Selected: " + pivotRow);
             for (int l = 0; l < size; l++) {
                 System.out.println(Arrays.toString(coefficientMatrix[l]));
             }
@@ -188,8 +190,6 @@ public class GuassianElimination {
 
         }
 
-        // solutionVector[pivotRow] = constantVector[pivotRow] /
-        // coefficientMatrix[pivotRow][size - 1];
         double tempSolution = 0;
         double divider = 0;
         for (int i = size - 1; i >= 0; i--) {
@@ -232,6 +232,8 @@ public class GuassianElimination {
         double ratio = 0;
         for (int row : rowsNotUsedAsPivotsYet) {
             ratio = Math.abs(coefficientMatrix[row][currentColumn] / scaleVector[row]);
+            System.out.println("Ratio: " + ratio + " Row: " + row + " Column: " + currentColumn + " Scale: "
+                    + scaleVector[row] + " Coefficient: " + coefficientMatrix[row][currentColumn]);
             if (ratio > max) {
                 max = ratio;
                 pivotRow = row;
