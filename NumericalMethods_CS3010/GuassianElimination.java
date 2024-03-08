@@ -28,11 +28,11 @@ public class GuassianElimination {
     public static void main(String[] args) throws FileNotFoundException {
         Scanner scanny = new Scanner(System.in);
         int option;
-        System.out.println("Guassian Elimination Calculator");
+        System.out.println("\nGuassian Elimination Calculator");
         System.out.println("Please make a selection, enter '1' for option 1 or '2' for option 2.");
         System.out.println("1) Manual input");
-        System.out.println("2) input file");
-        System.out.println("Enter your choice: ");
+        System.out.println("2) Input file");
+        System.out.print("Enter your choice: ");
         option = scanny.nextInt();
 
         while (!(option == 1) && !(option == 2)) {
@@ -167,14 +167,14 @@ public class GuassianElimination {
                         coefficientMatrix[rowToBeAltered][k] = new BigDecimal(
                                 coefficientMatrix[rowToBeAltered][k] + (-firstElementInRowToBeAltered
                                         * coefficientMatrix[pivotRow][k] / firstElementInPivotRow))
-                                .setScale(3, RoundingMode.HALF_UP).doubleValue();
+                                .setScale(10, RoundingMode.HALF_UP).doubleValue();
 
                     } else if (k == size) {// constant vector alteration performed here.
 
                         constantVector[rowToBeAltered] = new BigDecimal(constantVector[rowToBeAltered]
                                 + (-firstElementInRowToBeAltered * constantVector[pivotRow]
                                         / firstElementInPivotRow))
-                                .setScale(3, RoundingMode.HALF_UP).doubleValue();
+                                .setScale(10, RoundingMode.HALF_UP).doubleValue();
 
                     }
 
