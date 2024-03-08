@@ -1,9 +1,4 @@
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.io.File;
+
 /*
  * Name: Maayan Israel
  * Date: 2/28/2024
@@ -11,6 +6,12 @@ import java.io.File;
  * Assignment: Project 1
  * Description: This class will implement the Guassian Elimination algorithm to solve a system of linear equations.
  */
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
