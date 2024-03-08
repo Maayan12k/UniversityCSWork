@@ -28,11 +28,11 @@ public class GuassianElimination {
     public static void main(String[] args) throws FileNotFoundException {
         Scanner scanny = new Scanner(System.in);
         int option;
-        System.out.println("Guassian Elimination Calculator");
+        System.out.println("\nGuassian Elimination Calculator");
         System.out.println("Please make a selection, enter '1' for option 1 or '2' for option 2.");
         System.out.println("1) Manual input");
-        System.out.println("2) input file");
-        System.out.println("Enter your choice: ");
+        System.out.println("2) Input file");
+        System.out.print("Enter your choice: ");
         option = scanny.nextInt();
 
         while (!(option == 1) && !(option == 2)) {
@@ -62,7 +62,7 @@ public class GuassianElimination {
             }
 
         }
-
+        scanny.close();
     }
 
     // Constuctor that invoked the coefficient matrix from a stdin
@@ -152,7 +152,8 @@ public class GuassianElimination {
     public void solve() {
         int pivotRow = -1;
 
-        for (int i = 0; i <= size; i++) {
+        for (int i = 0; i < size; i++) {
+            System.out.println("Iteration: " + (i + 1));
             pivotRow = findPivotRow(i);
             pivotsUsedInOrder.add(pivotRow);
             rowsNotUsedAsPivotsYet.remove((Integer) pivotRow);
@@ -166,21 +167,22 @@ public class GuassianElimination {
                         coefficientMatrix[rowToBeAltered][k] = new BigDecimal(
                                 coefficientMatrix[rowToBeAltered][k] + (-firstElementInRowToBeAltered
                                         * coefficientMatrix[pivotRow][k] / firstElementInPivotRow))
-                                .setScale(3, RoundingMode.HALF_UP).doubleValue();
+                                .setScale(10, RoundingMode.HALF_UP).doubleValue();
 
                     } else if (k == size) {// constant vector alteration performed here.
 
                         constantVector[rowToBeAltered] = new BigDecimal(constantVector[rowToBeAltered]
                                 + (-firstElementInRowToBeAltered * constantVector[pivotRow]
                                         / firstElementInPivotRow))
-                                .setScale(3, RoundingMode.HALF_UP).doubleValue();
+                                .setScale(10, RoundingMode.HALF_UP).doubleValue();
 
                     }
 
                 }
 
             }
-            System.out.println("Iteration: " + (i + 1));
+
+            System.out.println("Pivot Row Selected: " + pivotRow);
             for (int l = 0; l < size; l++) {
                 System.out.println(Arrays.toString(coefficientMatrix[l]));
             }
@@ -188,8 +190,6 @@ public class GuassianElimination {
 
         }
 
-        // solutionVector[pivotRow] = constantVector[pivotRow] /
-        // coefficientMatrix[pivotRow][size - 1];
         double tempSolution = 0;
         double divider = 0;
         for (int i = size - 1; i >= 0; i--) {
@@ -232,6 +232,8 @@ public class GuassianElimination {
         double ratio = 0;
         for (int row : rowsNotUsedAsPivotsYet) {
             ratio = Math.abs(coefficientMatrix[row][currentColumn] / scaleVector[row]);
+            System.out.println("Ratio: " + ratio + " Row: " + row + " Column: " + currentColumn + " Scale: "
+                    + scaleVector[row] + " Coefficient: " + coefficientMatrix[row][currentColumn]);
             if (ratio > max) {
                 max = ratio;
                 pivotRow = row;
