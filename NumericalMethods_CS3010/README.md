@@ -1,7 +1,3 @@
-Here's a README for the directory containing the four Java projects:
-
----
-
 # Numerical Methods Java Projects
 
 This repository contains implementations of various numerical methods using Java. The projects demonstrate different techniques to solve systems of linear equations, find polynomial roots, and perform interpolation. Below is an overview of each project:
