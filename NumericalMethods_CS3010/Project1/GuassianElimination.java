@@ -1,3 +1,4 @@
+package Project1;
 
 /*
  * Name: Maayan Israel
@@ -87,17 +88,17 @@ public class GuassianElimination {
             constantVector[i] = scanner.nextDouble();
         }
 
+        scanner.close();
         for (int i = 0; i < size; i++)
             rowsNotUsedAsPivotsYet.add(i);
 
-        scanner.close();
-
-        System.out.println("\nCoefficient Matrix: " + Arrays.deepToString(coefficientMatrix));
-        System.out.println("Constant Vector: " + Arrays.toString(constantVector) + "\n");
+        System.out.println();
+        for (int l = 0; l < size; l++) {
+            System.out.println(Arrays.toString(coefficientMatrix[l]));
+        }
+        System.out.println("CV: " + Arrays.toString(constantVector) + "\n");
 
         solve();
-
-        System.out.println("\nSolution Vector: " + Arrays.toString(solutionVector));
     }
 
     // Constuctor that invoked the coefficient matrix from a file.
@@ -210,7 +211,6 @@ public class GuassianElimination {
 
         }
         System.out.println("Solution Vector: " + Arrays.toString(solutionVector));
-
     }
 
     public void setSize(File file) throws FileNotFoundException {
@@ -233,8 +233,8 @@ public class GuassianElimination {
         double ratio = 0;
         for (int row : rowsNotUsedAsPivotsYet) {
             ratio = Math.abs(coefficientMatrix[row][currentColumn] / scaleVector[row]);
-            System.out.println("Ratio: " + ratio + " Row: " + row + " Column: " + currentColumn + " Scale: "
-                    + scaleVector[row] + " Coefficient: " + coefficientMatrix[row][currentColumn]);
+            System.out.println("Row: " + row + "\tCoefficient: " + coefficientMatrix[row][currentColumn] +
+                    "\tScale: " + scaleVector[row] + "\tRatio: " + ratio);
             if (ratio > max) {
                 max = ratio;
                 pivotRow = row;
