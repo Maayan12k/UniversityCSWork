@@ -4,7 +4,7 @@ This repository showcases a collection of projects and assignments that span mul
 
 ## Repository Overview
 
-This repository is organized into four main areas:
+This repository is organized into five main areas:
 
 1. **Assembly Language**
    - Low-level programming using assembly language, focusing on direct interaction with hardware components.
@@ -22,6 +22,10 @@ This repository is organized into four main areas:
    - Focuses on solving mathematical problems computationally, using techniques such as interpolation, root finding, and solving systems of equations.
    - Includes iterative methods, matrix operations, and polynomial manipulation.
 
+5. **GPU Computing**
+   - Introductory work in massively parallel programming using CUDA C on NCSA GPUs.
+   - [Space to add future projects/programs here].
+
 ---
 
 ## The Learning Journey: From Hardware to Algorithms
@@ -32,15 +36,16 @@ This repository follows a progression from understanding **low-level hardware in
 - **Computer Architecture** bridges the gap between software and hardware, providing a deeper understanding of how code executes on real machines.
 - **Data Structures and Algorithms** take the lessons from lower levels and apply them to build scalable and optimized solutions for complex computational problems.
 - **Numerical Methods** showcases the application of computational techniques to solve scientific and engineering problems.
+- **GPU Computing** introduces the power of parallel processing to handle data-intensive computations, enhancing performance significantly.
 
 ---
 
 ## How to Navigate
 
-Each directory corresponds to one of the four focus areas. Inside each directory, you'll find code implementations and read me's.
+Each directory corresponds to one of the five focus areas. Inside each directory, you'll find code implementations and detailed explanations.
 
 - **AssemblyLanguage/**: Contains assembly programs demonstrating fundamental hardware interactions.
 - **ComputerArchitecture/**: Projects exploring the design and performance of computer systems.
 - **DataStructuresAlgorithms/**: Implementations of common data structures and algorithms.
 - **NumericalMethods/**: Numerical computation projects tackling mathematical problems.
-
+- **GPUComputing/**: CUDA C programs focusing on parallel computing techniques.
