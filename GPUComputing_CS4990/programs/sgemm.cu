@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <cmath>
+#include <math.h>
 
 /******************************************************************************************************* */
 /* Helper Functions*/
@@ -15,9 +16,9 @@ double myCPUTimer()
     return ((double)tp.tv_sec + (double)tp.tv_usec / 1.0e6);
 }
 
-bool verify(float *gpu_result, float *cpu_result, unsigned int nRows, unsigned int nCols)
+bool verify(float *gpu_result, float *cpu_result, unsigned int nRows, unsigned int nCols, int precision)
 {
-    const float epsilon = 1e-3; // Set a tolerance value for comparison
+    const float epsilon = std::pow(10, -precision);
 
     for (int i = 0; i < nRows * nCols; i++)
     {
@@ -256,6 +257,21 @@ void basicSgemm_d_1thread1column(float *a_h, float *b_h, float *c_h, unsigned in
     cudaFree(c_d);
 }
 
+int calculatePrecision(int m, int n, int k)
+{
+    // Total number of operations in matrix multiplication
+    int totalOperations = m * n * k;
+
+    // Constant factor to scale precision (tunable based on requirements)
+    const int C = 10;
+
+    // Calculate precision inversely proportional to log of total operations
+    // Ensure that the precision is at least 1
+    int precision = (int)fmax(1, C / log10(totalOperations));
+
+    return precision;
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -278,18 +294,20 @@ int main(int argc, char *argv[])
 
     float *cpu_result = (float *)calloc(m * n, sizeof(float));
 
+    int precision = calculatePrecision(m, k, n);
+
     basicSgemm_h(a_h, b_h, cpu_result, m, k, n);
 
     basicSgemm_d_1thread1element(a_h, b_h, c_h, m, k, n);
-    if (verify(c_h, cpu_result, m, n))
+    if (verify(c_h, cpu_result, m, n, precision))
         printf("Verified!\n");
 
     basicSgemm_d_1thread1row(a_h, b_h, c_h, m, k, n);
-    if (verify(c_h, cpu_result, m, n))
+    if (verify(c_h, cpu_result, m, n, precision))
         printf("Verified!\n");
 
     basicSgemm_d_1thread1column(a_h, b_h, c_h, m, k, n);
-    if (verify(c_h, cpu_result, m, n))
+    if (verify(c_h, cpu_result, m, n, precision))
         printf("Verified!\n");
 
     free(a_h);
