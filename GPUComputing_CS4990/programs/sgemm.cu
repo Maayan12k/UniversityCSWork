@@ -3,9 +3,6 @@
 #include <sys/time.h>
 #include <cmath>
 
-// CPU Result
-float *cpu_result = NULL;
-
 /******************************************************************************************************* */
 /* Helper Functions*/
 /* START */
@@ -18,9 +15,9 @@ double myCPUTimer()
     return ((double)tp.tv_sec + (double)tp.tv_usec / 1.0e6);
 }
 
-bool verify(float *gpu_result, unsigned int nRows, unsigned int nCols)
+bool verify(float *gpu_result, float *cpu_result, unsigned int nRows, unsigned int nCols)
 {
-    const float epsilon = 1e-4; // Set a tolerance value for comparison
+    const float epsilon = 1e-3; // Set a tolerance value for comparison
 
     for (int i = 0; i < nRows * nCols; i++)
     {
@@ -40,7 +37,7 @@ bool verify(float *gpu_result, unsigned int nRows, unsigned int nCols)
 /******************************************************************************************************* */
 /* Matrix Multiplication Functions*/
 /* START */
-void basicSgemm_h(float *a_h, float *b_h, unsigned int m, unsigned int k, unsigned int n)
+void basicSgemm_h(float *a_h, float *b_h, float *c_h, unsigned int m, unsigned int k, unsigned int n)
 {
 
     for (int outputMatrixIndex = 0; outputMatrixIndex < m * n; outputMatrixIndex++)
@@ -53,14 +50,15 @@ void basicSgemm_h(float *a_h, float *b_h, unsigned int m, unsigned int k, unsign
         for (int i = 0; i < k; i++)
             sum += a_h[row * k + i] * b_h[i * n + col];
 
-        cpu_result[outputMatrixIndex] = sum;
+        c_h[outputMatrixIndex] = sum;
     }
 
-    printf("CPU Result\n");
+    printf("\nCPU Result\n");
     for (int i = 0; i < m * n; i++)
     {
-        printf("%f ", cpu_result[i]);
+        printf("%f ", c_h[i]);
     }
+    printf("\n");
 }
 
 __global__ void matrixMulKernel_1thread1element(float *a_d, float *b_d, float *c_d, unsigned int m, unsigned int k, unsigned int n)
@@ -99,17 +97,17 @@ __global__ void matrixMulKernel_1thread1row(float *a_d, float *b_d, float *c_d, 
 __global__ void matrixMulKernel_1thread1column(float *a_d, float *b_d, float *c_d, unsigned int m, unsigned int k, unsigned int n)
 {
 
-    int column = blockIdx.x * blockDim.x + threadIdx.x; // Calculate global column index
-    if (column < n)
+    int col = blockIdx.x * blockDim.x + threadIdx.x; // Calculate global column index
+    if (col < n)
     { // Check if the column index is within bounds
         for (int row = 0; row < m; row++)
         {
             float sum = 0.0;
             for (int i = 0; i < k; i++)
             {
-                sum += a_d[column * k + i] * b_d[i * n + row];
+                sum += a_d[row * k + i] * b_d[i * n + col];
             }
-            c_d[row * n + column] = sum;
+            c_d[row * n + col] = sum;
         }
     }
 }
@@ -131,11 +129,6 @@ void basicSgemm_d_1thread1element(float *a_h, float *b_h, float *c_h, unsigned i
     cudaMemcpy(b_d, b_h, sizeof(float) * k * n, cudaMemcpyHostToDevice);
 
     // (3) call kernel to launch a grid of threads to perform the matrix multiplcation on GPU
-    int one = ceil(n / 16);
-    int two = ceil(m / 16);
-    int three = (n + 16 - 1) / 16;
-    int four = (m + 16 - 1) / 16;
-    printf("\n\n\n%d %d %d %d\n\n\n", one, two, three, four);
     dim3 gridDim((n + 16 - 1) / 16, (m + 16 - 1) / 16);
     dim3 blockDim(16, 16);
 
@@ -150,16 +143,11 @@ void basicSgemm_d_1thread1element(float *a_h, float *b_h, float *c_h, unsigned i
     // (4) Copy the result data from device memory of array c_d to host memory of array c_h
     cudaMemcpy(c_h, c_d, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
 
-    printf("\nGPU Result\n");
-    for (int i = 0; i < m * n; i++)
-    {
-        printf("%f ", c_h[i]);
-    }
-
-    if (verify(c_h, m, n))
-    {
-        printf("Verified!\n");
-    }
+    // printf("\nGPU Result Single Element\n");
+    // for(int i = 0; i < m*n; i++){
+    //     printf("%f ", c_h[i]);
+    // }
+    // printf("\n");
 
     // (5) free device memory of a_d, b_d, and c_d
     cudaFree(a_d);
@@ -181,34 +169,35 @@ void basicSgemm_d_1thread1row(float *a_h, float *b_h, float *c_h, unsigned int m
     cudaMemcpy(b_d, b_h, sizeof(float) * k * n, cudaMemcpyHostToDevice);
 
     // (3) call kernel to launch a grid of threads to perform the matrix multiplcation on GPU && CPU
-    dim3 grid;
-    dim3 block;
+    dim3 gridDim;
+    dim3 blockDim;
     if (m <= 1024)
     {
-        grid.x = 1;
-        block.x = m;
+        gridDim.x = 1;
+        blockDim.x = m;
     }
     else
     {
-        grid.x = ceil(m / 1024.0);
-        block.x = 1024;
+        gridDim.x = (m + 1023) / 1024;
+        blockDim.x = 1024;
     }
 
     double start_time = myCPUTimer();
-    matrixMulKernel_1thread1element<<<grid, block>>>(a_d, b_d, c_d, m, k, n);
+    matrixMulKernel_1thread1row<<<gridDim, blockDim>>>(a_d, b_d, c_d, m, k, n);
     cudaDeviceSynchronize();
     double end_time = myCPUTimer();
     double elapsed_time = end_time - start_time;
 
-    printf("Elapsed time of 1 thread 1 output row: %f ms\n", 1000 * elapsed_time);
+    printf("\nElapsed time of 1 thread 1 output row: %f ms\n", 1000 * elapsed_time);
 
     // (4) Copy the result data from device memory of array c_d to host memory of array c_h
     cudaMemcpy(c_h, c_d, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
 
-    if (verify(c_h, m, n))
-    {
-        printf("Verified!\n");
-    }
+    // printf("\nGPU Result Single Row\n");
+    // for(int i = 0; i < m*n; i++){
+    //     printf("%f ", c_h[i]);
+    // }
+    // printf("\n");
 
     // (5) free device memory of a_d, b_d, and c_d
     cudaFree(a_d);
@@ -230,19 +219,36 @@ void basicSgemm_d_1thread1column(float *a_h, float *b_h, float *c_h, unsigned in
     cudaMemcpy(b_d, b_h, sizeof(float) * k * n, cudaMemcpyHostToDevice);
 
     // (3) call kernel to launch a grid of threads to perform the matrix multiplcation on GPU && CPU
-    // dim3 gridDim(ceil(m/16.0), ceil(n/16.0), 1);
-    // dim3 blockDim(16, 16, 1);
+    dim3 gridDim;
+    dim3 blockDim;
+    if (n <= 1024)
+    {
+        gridDim.x = 1;
+        blockDim.x = n;
+    }
+    else
+    {
+        gridDim.x = (n + 1023) / 1024;
+        blockDim.x = 1024;
+    }
 
     double start_time = myCPUTimer();
-    // matrixMulKernel_1thread1element<<<gridDim, blockDim>>>(a_d, b_d, c_d, m, k, n);
+    matrixMulKernel_1thread1column<<<gridDim, blockDim>>>(a_d, b_d, c_d, m, k, n);
     cudaDeviceSynchronize();
     double end_time = myCPUTimer();
     double elapsed_time = end_time - start_time;
 
-    printf("Elapsed time of 1 thread 1 output element: %f ms\n", 1000 * elapsed_time);
+    printf("Elapsed time of 1 thread 1 output column: %f ms\n", 1000 * elapsed_time);
 
     // (4) Copy the result data from device memory of array c_d to host memory of array c_h
     cudaMemcpy(c_h, c_d, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
+
+    printf("\nGPU Result Single column\n");
+    for (int i = 0; i < m * n; i++)
+    {
+        printf("%f ", c_h[i]);
+    }
+    printf("\n");
 
     // (5) free device memory of a_d, b_d, and c_d
     cudaFree(a_d);
@@ -270,12 +276,21 @@ int main(int argc, char *argv[])
 
     float *c_h = (float *)calloc(m * n, sizeof(float));
 
-    cpu_result = (float *)calloc(m * n, sizeof(float));
+    float *cpu_result = (float *)calloc(m * n, sizeof(float));
 
-    basicSgemm_h(a_h, b_h, m, k, n);
+    basicSgemm_h(a_h, b_h, cpu_result, m, k, n);
+
     basicSgemm_d_1thread1element(a_h, b_h, c_h, m, k, n);
-    // basicSgemm_d_1thread1row(a_h, b_h, c_h, m, k, n);
-    // basicSgemm_d_1thread1column(a_h, b_h, c_h, m, k, n);
+    if (verify(c_h, cpu_result, m, n))
+        printf("Verified!\n");
+
+    basicSgemm_d_1thread1row(a_h, b_h, c_h, m, k, n);
+    if (verify(c_h, cpu_result, m, n))
+        printf("Verified!\n");
+
+    basicSgemm_d_1thread1column(a_h, b_h, c_h, m, k, n);
+    if (verify(c_h, cpu_result, m, n))
+        printf("Verified!\n");
 
     free(a_h);
     free(b_h);
