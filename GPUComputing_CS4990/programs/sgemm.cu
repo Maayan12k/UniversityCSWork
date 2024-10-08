@@ -31,6 +31,14 @@ bool verify(float *gpu_result, float *cpu_result, unsigned int nRows, unsigned i
     return true;
 }
 
+int calculatePrecision(int m, int n, int k)
+{
+    int totalOperations = m * n * k;
+    const int C = 15;
+    int precision = (int)fmax(1, C / log10(totalOperations));
+    return precision;
+}
+
 /* END */
 /* Helper Functions*/
 /******************************************************************************************************* */
@@ -54,12 +62,11 @@ void basicSgemm_h(float *a_h, float *b_h, float *c_h, unsigned int m, unsigned i
         c_h[outputMatrixIndex] = sum;
     }
 
-    printf("\nCPU Result\n");
-    for (int i = 0; i < m * n; i++)
-    {
-        printf("%f ", c_h[i]);
-    }
-    printf("\n");
+    // printf("\nCPU Result\n");
+    // for(int i = 0; i < m*n; i++){
+    //     printf("%f ", c_h[i]);
+    // }
+    // printf("\n");
 }
 
 __global__ void matrixMulKernel_1thread1element(float *a_d, float *b_d, float *c_d, unsigned int m, unsigned int k, unsigned int n)
@@ -139,7 +146,7 @@ void basicSgemm_d_1thread1element(float *a_h, float *b_h, float *c_h, unsigned i
     double end_time = myCPUTimer();
     double elapsed_time = end_time - start_time;
 
-    printf("\nElapsed time of 1 thread 1 output element: %f ms\n", 1000 * elapsed_time);
+    printf("\nElapsed time of 1 thread 1 output element: %f s\n", elapsed_time);
 
     // (4) Copy the result data from device memory of array c_d to host memory of array c_h
     cudaMemcpy(c_h, c_d, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
@@ -189,7 +196,7 @@ void basicSgemm_d_1thread1row(float *a_h, float *b_h, float *c_h, unsigned int m
     double end_time = myCPUTimer();
     double elapsed_time = end_time - start_time;
 
-    printf("\nElapsed time of 1 thread 1 output row: %f ms\n", 1000 * elapsed_time);
+    printf("Elapsed time of 1 thread 1 output row: %f s\n", elapsed_time);
 
     // (4) Copy the result data from device memory of array c_d to host memory of array c_h
     cudaMemcpy(c_h, c_d, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
@@ -219,7 +226,7 @@ void basicSgemm_d_1thread1column(float *a_h, float *b_h, float *c_h, unsigned in
     cudaMemcpy(a_d, a_h, sizeof(float) * m * k, cudaMemcpyHostToDevice);
     cudaMemcpy(b_d, b_h, sizeof(float) * k * n, cudaMemcpyHostToDevice);
 
-    // (3) call kernel to launch a grid of threads to perform the matrix multiplcation on GPU && CPU
+    // (3) call kernel to launch a grid of threads to perform the matrix multiplcation on GPU
     dim3 gridDim;
     dim3 blockDim;
     if (n <= 1024)
@@ -239,37 +246,21 @@ void basicSgemm_d_1thread1column(float *a_h, float *b_h, float *c_h, unsigned in
     double end_time = myCPUTimer();
     double elapsed_time = end_time - start_time;
 
-    printf("Elapsed time of 1 thread 1 output column: %f ms\n", 1000 * elapsed_time);
+    printf("Elapsed time of 1 thread 1 output column: %f s\n", elapsed_time);
 
     // (4) Copy the result data from device memory of array c_d to host memory of array c_h
     cudaMemcpy(c_h, c_d, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
 
-    printf("\nGPU Result Single column\n");
-    for (int i = 0; i < m * n; i++)
-    {
-        printf("%f ", c_h[i]);
-    }
-    printf("\n");
+    // printf("\nGPU Result Single column\n");
+    // for(int i = 0; i < m*n; i++){
+    //     printf("%f ", c_h[i]);
+    // }
+    // printf("\n");
 
     // (5) free device memory of a_d, b_d, and c_d
     cudaFree(a_d);
     cudaFree(b_d);
     cudaFree(c_d);
-}
-
-int calculatePrecision(int m, int n, int k)
-{
-    // Total number of operations in matrix multiplication
-    int totalOperations = m * n * k;
-
-    // Constant factor to scale precision (tunable based on requirements)
-    const int C = 10;
-
-    // Calculate precision inversely proportional to log of total operations
-    // Ensure that the precision is at least 1
-    int precision = (int)fmax(1, C / log10(totalOperations));
-
-    return precision;
 }
 
 int main(int argc, char *argv[])
@@ -298,17 +289,34 @@ int main(int argc, char *argv[])
 
     basicSgemm_h(a_h, b_h, cpu_result, m, k, n);
 
+    printf("\nPrecision Threshold: %d decimal places.\n", precision);
+    printf("\nMatrix Dimensions: \n");
+    printf("\tA: %d x %d\n", m, k);
+    printf("\tB: %d x %d\n", k, n);
+    printf("\tC: %d x %d\n", m, n);
+
+    bool testsPassed = true;
+
     basicSgemm_d_1thread1element(a_h, b_h, c_h, m, k, n);
-    if (verify(c_h, cpu_result, m, n, precision))
-        printf("Verified!\n");
+    if (!verify(c_h, cpu_result, m, n, precision))
+        testsPassed = false;
 
     basicSgemm_d_1thread1row(a_h, b_h, c_h, m, k, n);
-    if (verify(c_h, cpu_result, m, n, precision))
-        printf("Verified!\n");
+    if (!verify(c_h, cpu_result, m, n, precision))
+        testsPassed = false;
 
     basicSgemm_d_1thread1column(a_h, b_h, c_h, m, k, n);
-    if (verify(c_h, cpu_result, m, n, precision))
-        printf("Verified!\n");
+    if (!verify(c_h, cpu_result, m, n, precision))
+        testsPassed = false;
+
+    if (testsPassed)
+    {
+        printf("\nVerifying Results... Tests Passed!\n");
+    }
+    else
+    {
+        printf("\nVerifying Results... Tests Failed!\n");
+    }
 
     free(a_h);
     free(b_h);
