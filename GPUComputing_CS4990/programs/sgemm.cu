@@ -61,12 +61,6 @@ void basicSgemm_h(float *a_h, float *b_h, float *c_h, unsigned int m, unsigned i
 
         c_h[outputMatrixIndex] = sum;
     }
-
-    // printf("\nCPU Result\n");
-    // for(int i = 0; i < m*n; i++){
-    //     printf("%f ", c_h[i]);
-    // }
-    // printf("\n");
 }
 
 __global__ void matrixMulKernel_1thread1element(float *a_d, float *b_d, float *c_d, unsigned int m, unsigned int k, unsigned int n)
@@ -151,12 +145,6 @@ void basicSgemm_d_1thread1element(float *a_h, float *b_h, float *c_h, unsigned i
     // (4) Copy the result data from device memory of array c_d to host memory of array c_h
     cudaMemcpy(c_h, c_d, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
 
-    // printf("\nGPU Result Single Element\n");
-    // for(int i = 0; i < m*n; i++){
-    //     printf("%f ", c_h[i]);
-    // }
-    // printf("\n");
-
     // (5) free device memory of a_d, b_d, and c_d
     cudaFree(a_d);
     cudaFree(b_d);
@@ -201,12 +189,6 @@ void basicSgemm_d_1thread1row(float *a_h, float *b_h, float *c_h, unsigned int m
     // (4) Copy the result data from device memory of array c_d to host memory of array c_h
     cudaMemcpy(c_h, c_d, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
 
-    // printf("\nGPU Result Single Row\n");
-    // for(int i = 0; i < m*n; i++){
-    //     printf("%f ", c_h[i]);
-    // }
-    // printf("\n");
-
     // (5) free device memory of a_d, b_d, and c_d
     cudaFree(a_d);
     cudaFree(b_d);
@@ -250,12 +232,6 @@ void basicSgemm_d_1thread1column(float *a_h, float *b_h, float *c_h, unsigned in
 
     // (4) Copy the result data from device memory of array c_d to host memory of array c_h
     cudaMemcpy(c_h, c_d, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
-
-    // printf("\nGPU Result Single column\n");
-    // for(int i = 0; i < m*n; i++){
-    //     printf("%f ", c_h[i]);
-    // }
-    // printf("\n");
 
     // (5) free device memory of a_d, b_d, and c_d
     cudaFree(a_d);
