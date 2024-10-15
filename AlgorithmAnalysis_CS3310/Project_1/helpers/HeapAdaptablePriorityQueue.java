@@ -1,9 +1,9 @@
-package helpers;
+package Project_1.helpers;
 
 import java.util.Comparator;
 
-import types.AdaptablePriorityQueue;
-import types.Entry;
+import Project_1.types.AdaptablePriorityQueue;
+import Project_1.types.Entry;
 
 public class HeapAdaptablePriorityQueue<K, V> extends HeapPriorityQueue<K, V> implements AdaptablePriorityQueue<K, V> {
 

@@ -1,4 +1,4 @@
-package types;
+package Project_1.types;
 
 /**
  * Interface for the adaptable priority queue ADT. The Entry instance

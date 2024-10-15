@@ -1,8 +1,9 @@
-package helpers;
+package Project_1.helpers;
 
 import java.util.Iterator;
-import types.Entry;
-import types.Map;
+
+import Project_1.types.Entry;
+import Project_1.types.Map;
 
 /**
  * An abstract base class to ease the implementation of the Map interface.

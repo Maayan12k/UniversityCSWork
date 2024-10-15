@@ -1,4 +1,4 @@
-package types;
+package Project_1.types;
 
 /**
  * An interface for an associative map which binds a key uniquely to a value.

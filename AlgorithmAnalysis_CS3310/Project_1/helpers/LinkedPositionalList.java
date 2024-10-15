@@ -1,9 +1,10 @@
-package helpers;
+package Project_1.helpers;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import types.PositionalList;
-import types.Position;
+
+import Project_1.types.Position;
+import Project_1.types.PositionalList;
 
 /**
  * Implementation of a positional list stored as a doubly linked list.

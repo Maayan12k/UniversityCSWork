@@ -1,15 +1,18 @@
+package Project_1;
+
 import java.util.Scanner;
+
+import Project_1.helpers.AdjacencyMapGraph;
+import Project_1.helpers.HeapAdaptablePriorityQueue;
+import Project_1.helpers.ProbeHashMap;
+import Project_1.types.AdaptablePriorityQueue;
+import Project_1.types.Edge;
+import Project_1.types.Entry;
+import Project_1.types.Map;
+import Project_1.types.Vertex;
+
 import java.util.List;
 import java.util.ArrayList;
-
-import helpers.AdjacencyMapGraph;
-import helpers.HeapAdaptablePriorityQueue;
-import helpers.ProbeHashMap;
-import types.AdaptablePriorityQueue;
-import types.Edge;
-import types.Entry;
-import types.Map;
-import types.Vertex;
 import java.io.File;
 import java.io.FileNotFoundException;
 

@@ -1,8 +1,8 @@
-package helpers;
+package Project_1.helpers;
 
 import java.util.ArrayList;
 
-import types.Entry;
+import Project_1.types.Entry;
 
 /*
  * Map implementation using hash table with linear probing.

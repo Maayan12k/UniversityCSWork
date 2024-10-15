@@ -1,9 +1,9 @@
-package helpers;
+package Project_1.helpers;
 
 import java.util.ArrayList;
 import java.util.Random;
 
-import types.Entry;
+import Project_1.types.Entry;
 
 /**
  * An abstract base class supporting Map implementations that use hash

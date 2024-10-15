@@ -1,9 +1,9 @@
-package helpers;
+package Project_1.helpers;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 
-import types.Entry;
+import Project_1.types.Entry;
 
 /**
  * An implementation of a priority queue using an array-based heap.

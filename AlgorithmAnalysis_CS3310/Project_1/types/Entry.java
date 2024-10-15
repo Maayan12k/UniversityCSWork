@@ -1,4 +1,4 @@
-package types;
+package Project_1.types;
 
 /**
  * Interface for a key-value pair.

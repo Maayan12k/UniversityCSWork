@@ -1,4 +1,4 @@
-package types;
+package Project_1.types;
 
 /**
  * An interface for a position which is an abstraction for the

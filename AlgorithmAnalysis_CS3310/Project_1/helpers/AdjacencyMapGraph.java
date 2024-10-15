@@ -1,11 +1,11 @@
-package helpers;
+package Project_1.helpers;
 
-import types.Vertex;
-import types.Graph;
-import types.Edge;
-import types.PositionalList;
-import types.Map;
-import types.Position;
+import Project_1.types.Edge;
+import Project_1.types.Graph;
+import Project_1.types.Map;
+import Project_1.types.Position;
+import Project_1.types.PositionalList;
+import Project_1.types.Vertex;
 
 /**
  * An implementation for a graph structure using an adjacency map for each

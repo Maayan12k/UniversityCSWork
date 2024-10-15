@@ -1,9 +1,9 @@
-package helpers;
+package Project_1.helpers;
 
 import java.util.Comparator;
 
-import types.PriorityQueue;
-import types.Entry;
+import Project_1.types.Entry;
+import Project_1.types.PriorityQueue;
 
 /**
  * An abstract base class to ease the implementation of the PriorityQueue
