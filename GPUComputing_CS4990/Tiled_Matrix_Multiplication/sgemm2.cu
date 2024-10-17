@@ -80,6 +80,44 @@ __global__ void matrixMulKernel_1thread1element(float *a_d, float *b_d, float *c
 
 __global__ void matrixMulKernel_tiled(float *a_d, float *b_d, float *c_d, unsigned int m, unsigned int k, unsigned int n)
 {
+
+    __shared__ float A_s[16][16];
+    __shared__ float B_s[16][16];
+
+    int row = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
+
+    float sum = 0.0f;
+
+    for (unsigned int tile = 0; tile < n / 16; ++tile)
+    {
+
+        // if(row < m || col < n){
+        // if(tile*16 + threadIdx.x < k && row*n + tile*16 + threadIdx.x < m*k){
+        A_s[threadIdx.y][threadIdx.x] = a_d[row * n + tile * 16 + threadIdx.x];
+        // }else{
+        //     A_s[threadIdx.y][threadIdx.x] = 0;
+        // }
+
+        // if((tile*16 + threadIdx.y) < n && (tile*16 + threadIdx.y)*n + col < k*n){
+        B_s[threadIdx.y][threadIdx.x] = b_d[(tile * 16 + threadIdx.y) * n + col];
+        // }else{
+        //     B_s[threadIdx.y][threadIdx.x] = 0;
+        // }
+
+        __syncthreads();
+        // }
+
+        // if a thread is withing the output matrix row AND column, perform a partial sum
+        // if(row < m && col < n){
+        for (unsigned int i = 0; i < 16; ++i)
+        {
+            sum += A_s[threadIdx.y][i] * B_s[i][threadIdx.x];
+        }
+        __syncthreads();
+    }
+
+    c_d[row * n + col] = sum;
 }
 
 /* Matrix Multiplication Functions*/
@@ -134,16 +172,16 @@ void basicSgemm_d_tiled(float *a_h, float *b_h, float *c_h, unsigned int m, unsi
     cudaMemcpy(b_d, b_h, sizeof(float) * k * n, cudaMemcpyHostToDevice);
 
     // (3) call kernel to launch a grid of threads to perform the matrix multiplcation on GPU
-    // dim3 gridDim((n + 16 - 1) / 16, (m + 16 - 1) / 16);
-    // dim3 blockDim(16, 16);
+    dim3 gridDim((n + 16 - 1) / 16, (m + 16 - 1) / 16);
+    dim3 blockDim(16, 16);
 
     double start_time = myCPUTimer();
-    // matrixMulKernel_tiled<<<gridDim, blockDim>>>(a_d, b_d, c_d, m, k, n);
+    matrixMulKernel_tiled<<<gridDim, blockDim>>>(a_d, b_d, c_d, m, k, n);
     cudaDeviceSynchronize();
     double end_time = myCPUTimer();
     double elapsed_time = end_time - start_time;
 
-    printf("\nElapsed time of 1 thread 1 output element: %f s\n", elapsed_time);
+    printf("\nElapsed time of 1 thread 1 output element with shared memory: %f s\n", elapsed_time);
 
     // (4) Copy the result data from device memory of array c_d to host memory of array c_h
     cudaMemcpy(c_h, c_d, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
