@@ -39,6 +39,17 @@ int calculatePrecision(int m, int n, int k)
     return precision;
 }
 
+int calculateTileSize(int sharedMemBytesPerBlock)
+{
+    int maxTileSize = sqrt((sharedMemBytesPerBlock / 8));
+    int factor = maxTileSize / 16;
+
+    if (maxTileSize / 16 == 0)
+        return maxTileSize % 16;
+
+    return factor * 16;
+}
+
 /* END */
 /* Helper Functions*/
 /******************************************************************************************************* */
@@ -60,6 +71,12 @@ void basicSgemm_h(float *a_h, float *b_h, float *c_h, unsigned int m, unsigned i
             sum += a_h[row * k + i] * b_h[i * n + col];
 
         c_h[outputMatrixIndex] = sum;
+    }
+
+    printf("\n");
+    for (int i = 0; i < m * n; i++)
+    {
+        printf("%f ", c_h[i]);
     }
 }
 
@@ -93,17 +110,12 @@ __global__ void matrixMulKernel_tiled(float *a_d, float *b_d, float *c_d, unsign
     {
 
         // if(row < m || col < n){
-        // if(tile*16 + threadIdx.x < k && row*n + tile*16 + threadIdx.x < m*k){
-        A_s[threadIdx.y][threadIdx.x] = a_d[row * n + tile * 16 + threadIdx.x];
-        // }else{
-        //     A_s[threadIdx.y][threadIdx.x] = 0;
-        // }
 
-        // if((tile*16 + threadIdx.y) < n && (tile*16 + threadIdx.y)*n + col < k*n){
+        // if(tile*16 + threadIdx.x < k && row*n + tile*16 + threadIdx.x < m*k)
+        A_s[threadIdx.y][threadIdx.x] = a_d[row * n + tile * 16 + threadIdx.x];
+
+        // if((tile*16 + threadIdx.y) < n && (tile*16 + threadIdx.y)*n + col < k*n)
         B_s[threadIdx.y][threadIdx.x] = b_d[(tile * 16 + threadIdx.y) * n + col];
-        // }else{
-        //     B_s[threadIdx.y][threadIdx.x] = 0;
-        // }
 
         __syncthreads();
         // }
@@ -115,6 +127,7 @@ __global__ void matrixMulKernel_tiled(float *a_d, float *b_d, float *c_d, unsign
             sum += A_s[threadIdx.y][i] * B_s[i][threadIdx.x];
         }
         __syncthreads();
+        // }
     }
 
     c_d[row * n + col] = sum;
@@ -152,6 +165,12 @@ void basicSgemm_d_1thread1element(float *a_h, float *b_h, float *c_h, unsigned i
     // (4) Copy the result data from device memory of array c_d to host memory of array c_h
     cudaMemcpy(c_h, c_d, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
 
+    printf("\n");
+    for (int i = 0; i < m * n; i++)
+    {
+        printf("%f ", c_h[i]);
+    }
+
     // (5) free device memory of a_d, b_d, and c_d
     cudaFree(a_d);
     cudaFree(b_d);
@@ -185,6 +204,12 @@ void basicSgemm_d_tiled(float *a_h, float *b_h, float *c_h, unsigned int m, unsi
 
     // (4) Copy the result data from device memory of array c_d to host memory of array c_h
     cudaMemcpy(c_h, c_d, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
+
+    printf("\n");
+    for (int i = 0; i < m * n; i++)
+    {
+        printf("%f ", c_h[i]);
+    }
 
     // (5) free device memory of a_d, b_d, and c_d
     cudaFree(a_d);
@@ -229,6 +254,12 @@ int main(int argc, char *argv[])
     basicSgemm_d_1thread1element(a_h, b_h, c_h, m, k, n);
     if (!verify(c_h, cpu_result, m, n, precision))
         testsPassed = false;
+
+    cudaDeviceProp devProp;
+    cudaGetDeviceProperties(&devProp, 0);
+    unsigned int sharedMemBytesPerBlock = devProp.sharedMemPerBlock;
+    int TILE_SIZE = calculateTileSize(sharedMemBytesPerBlock);
+    printf("\n%d\n", TILE_SIZE);
 
     basicSgemm_d_tiled(a_h, b_h, c_h, m, k, n);
     if (!verify(c_h, cpu_result, m, n, precision))
