@@ -1,15 +1,4 @@
-package Project_1;
-
 import java.util.Scanner;
-
-import Project_1.helpers.AdjacencyMapGraph;
-import Project_1.helpers.HeapAdaptablePriorityQueue;
-import Project_1.helpers.ProbeHashMap;
-import Project_1.types.AdaptablePriorityQueue;
-import Project_1.types.Edge;
-import Project_1.types.Entry;
-import Project_1.types.Map;
-import Project_1.types.Vertex;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -18,11 +7,9 @@ import java.io.FileNotFoundException;
 
 /**
  * Solution to the shortest wait time problem. Use dijkstra's algorithm to
- * find
- * the shortest path between node 1 and node n.
+ * find the shortest path between node 1 and node n.
  * and then use permutation logic to find the shortest wait time between node
- * 1
- * and node n. if there are 2 edges, then return max
+ * 1 and node n. if there are 2 edges, then return max
  * of the two wait times. if there are 3 edges than return the min of the 4
  * possbile wait times. and so on
  */
@@ -31,13 +18,16 @@ public class ProgrammingProjectGraphAlgorithms {
 
     public static void main(String[] args) throws FileNotFoundException {
         // runTests();
+        ProgrammingProjectGraphAlgorithms proj = new ProgrammingProjectGraphAlgorithms();
+        System.out.println("\nShortest waiting time: " +
+                proj.calculateShortestWaitingTime());
 
     }
 
     public static void runTests() throws FileNotFoundException {
         System.out.println("\nNegative files: ");
-        String[] negativeOneFiles = { "false1.txt", "false2.txt", "false3.txt",
-                "false4.txt", "false5.txt", "false6.txt", "false7.txt" };
+        String[] negativeOneFiles = { "./tests/false1.txt", "./tests/false2.txt", "./tests/false3.txt",
+                "./tests/false4.txt", "./tests/false5.txt", "./tests/false6.txt", "./tests/false7.txt" };
 
         for (String file : negativeOneFiles) {
             ProgrammingProjectGraphAlgorithms proj = new ProgrammingProjectGraphAlgorithms(file);
@@ -46,8 +36,8 @@ public class ProgrammingProjectGraphAlgorithms {
         }
 
         System.out.println("\n\n\n\n\n Positive files: \n\n");
-        String[] positiveFiles = { "input1.txt", "input2.txt", "input3.txt",
-                "input4.txt", "input5.txt" };
+        String[] positiveFiles = { "./tests/input1.txt", "./tests/input2.txt", "./tests/input3.txt",
+                "./tests/input4.txt", "./tests/input5.txt" };
 
         for (String file : positiveFiles) {
             ProgrammingProjectGraphAlgorithms proj = new ProgrammingProjectGraphAlgorithms(file);
@@ -58,6 +48,45 @@ public class ProgrammingProjectGraphAlgorithms {
 
     AdjacencyMapGraph<Integer, Integer> graph;
     int size;
+
+    public ProgrammingProjectGraphAlgorithms() {
+        graph = new AdjacencyMapGraph<>(false);
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Please enter the Graph information: ");
+
+        String[] firstLine = scanner.nextLine().split(" ");
+        size = Integer.parseInt(firstLine[0]);
+        int numEdges = Integer.parseInt(firstLine[1]);
+
+        for (int i = 1; i <= size; i++) {
+            graph.insertVertex(i);
+        }
+
+        for (int i = 0; i < numEdges; i++) {
+            String[] line = scanner.nextLine().split(" ");
+            int source = Integer.parseInt(line[0]);
+            Vertex<Integer> sourceVertex = findVertex(source);
+
+            if (sourceVertex == null) {
+                System.out.println("Source vertex not found. Not adding edge");
+                continue;
+            }
+
+            int destination = Integer.parseInt(line[1]);
+            Vertex<Integer> destinationVertex = findVertex(destination);
+
+            if (destinationVertex == null) {
+                System.out.println("Destination vertex not found. Not adding edge");
+                continue;
+            }
+
+            int weight = Integer.parseInt(line[2]);
+            graph.insertEdge(sourceVertex, destinationVertex, weight);
+        }
+
+        scanner.close();
+    }
 
     /**
      * Constructor for ProgrammingProjectGraphAlgorithms.
@@ -73,31 +102,9 @@ public class ProgrammingProjectGraphAlgorithms {
         Scanner scanner = new Scanner(file);
         String[] firstLine = scanner.nextLine().split(" ");
         size = Integer.parseInt(firstLine[0]);
-        boolean graphHasBoosters = false;
-        try {
-            Integer.parseInt(firstLine[2]);
-            graphHasBoosters = true;
-        } catch (Exception e) {
-            System.out.println("No boosters");
-        }
 
-        if (graphHasBoosters) {
-            // String[] boostedNodes = scanner.nextLine().split(" ");
-
-            // for (int i = 1; i <= numNodes; i++) {
-            // boolean isBoosted = false;
-            // for (String node : boostedNodes) {
-            // if (i == Integer.parseInt(node)) {
-            // isBoosted = true;
-            // break;
-            // }
-            // }
-            // graph.insertVertex(i);
-            // }
-        } else {
-            for (int i = 1; i <= size; i++) {
-                graph.insertVertex(i);
-            }
+        for (int i = 1; i <= size; i++) {
+            graph.insertVertex(i);
         }
 
         while (scanner.hasNextLine()) {
@@ -171,23 +178,6 @@ public class ProgrammingProjectGraphAlgorithms {
 
         }
 
-        for (Integer x : mapSrc.keySet()) {
-            System.out.print("Node: " + x + " [ ");
-            for (Integer y : mapSrc.get(x)) {
-                System.out.print(y + " ");
-            }
-            System.out.println("]");
-        }
-        System.out.println("\ndest\n");
-
-        for (Integer x : mapDest.keySet()) {
-            System.out.print("Node: " + x + " [ ");
-            for (Integer y : mapDest.get(x)) {
-                System.out.print(y + " ");
-            }
-            System.out.println("]");
-        }
-
         int min = Integer.MAX_VALUE;
 
         int index = 1;
@@ -203,8 +193,6 @@ public class ProgrammingProjectGraphAlgorithms {
             int destSum = 0;
             for (int entry : dest)
                 destSum += entry;
-
-            System.out.println("Index:" + index + " srcSum: " + srcSum + " destSum: " + destSum);
 
             max = Math.max(srcSum, destSum);
 
@@ -225,7 +213,7 @@ public class ProgrammingProjectGraphAlgorithms {
      *
      * The edge's element is assumed to be its integral weight.
      */
-    public Map<Vertex<Integer>, List<Edge<Integer>>> shortestPathLengthsWithPaths(Vertex<Integer> src) {
+    private Map<Vertex<Integer>, List<Edge<Integer>>> shortestPathLengthsWithPaths(Vertex<Integer> src) {
         // d.get(v) is upper bound on distance from src to v
         Map<Vertex<Integer>, Integer> d = new ProbeHashMap<>();
 
