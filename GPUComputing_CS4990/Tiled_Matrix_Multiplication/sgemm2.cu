@@ -8,8 +8,6 @@
 /* Helper Functions*/
 /* START */
 
-// Must use cudaDeviceSynchronize() when measuring GPU kernel operations because CUDA kernel operations are non blocking.
-
 #define CHECK(call)                                                                  \
     {                                                                                \
         const cudaError_t cuda_ret = call;                                           \
@@ -46,7 +44,7 @@ bool verify(float *gpu_result, float *cpu_result, unsigned int nRows, unsigned i
 int calculatePrecision(int m, int n, int k)
 {
     int totalOperations = m * n * k;
-    const int C = 15;
+    const int C = 10;
     int precision = (int)fmax(1, C / log10(totalOperations));
     return precision;
 }
@@ -64,12 +62,11 @@ unsigned int isqrt(unsigned int y)
 int calculateTileSize(int sharedMemBytesPerBlock)
 {
     int maxTileSize = (int)isqrt((sharedMemBytesPerBlock / 8));
-    int factor = maxTileSize / 16;
 
     if (maxTileSize / 16 == 0)
         return maxTileSize;
 
-    return factor * 16;
+    return min(maxTileSize, 32);
 }
 
 /* END */
@@ -130,9 +127,9 @@ __global__ void matrixMulKernel_tiled(float *a_d, float *b_d, float *c_d, unsign
 
     float sum = 0.0f;
 
-    int condition = (int)ceilf(k / (float)tile_size);
+    // int condition = (int) ceilf( k / (float)tile_size);
 
-    for (int tile = 0; tile < condition; tile++)
+    for (int tile = 0; tile < (k - 1) / tile_size + 1; ++tile)
     {
 
         if (tile * tile_size + threadIdx.x < k && row < m)
@@ -228,7 +225,7 @@ void basicSgemm_d_tiled(float *a_h, float *b_h, float *c_h, unsigned int m, unsi
     // (3) call kernel to launch a grid of threads to perform the matrix multiplcation on GPU
     cudaDeviceProp devProp;
     cudaGetDeviceProperties(&devProp, 0);
-    unsigned int sharedMemBytesPerBlock = devProp.sharedMemPerBlock;
+    int sharedMemBytesPerBlock = devProp.sharedMemPerBlock;
     int TILE_SIZE = calculateTileSize(sharedMemBytesPerBlock);
 
     int As_size = TILE_SIZE * TILE_SIZE;
@@ -236,7 +233,9 @@ void basicSgemm_d_tiled(float *a_h, float *b_h, float *c_h, unsigned int m, unsi
     dim3 gridDim((n + TILE_SIZE - 1) / TILE_SIZE, (m + TILE_SIZE - 1) / TILE_SIZE);
     dim3 blockDim(TILE_SIZE, TILE_SIZE);
     unsigned int dynamicallyConfiguredSharedMemorySize = 2 * TILE_SIZE * TILE_SIZE * sizeof(float);
-    printf("\nshared memory in bytes requested: %d, number of max bytes: %d\n", dynamicallyConfiguredSharedMemorySize, sharedMemBytesPerBlock);
+
+    printf("\nGrid Dimensions: %d, %d, 1\n", (n + TILE_SIZE - 1) / TILE_SIZE, (m + TILE_SIZE - 1) / TILE_SIZE);
+    printf("\nBlock Dimensions: %d, %d, 1\n", TILE_SIZE, TILE_SIZE);
 
     double start_time = myCPUTimer();
     matrixMulKernel_tiled<<<gridDim, blockDim, dynamicallyConfiguredSharedMemorySize>>>(a_d, b_d, c_d, m, k, n, TILE_SIZE, As_size, As_size);
@@ -301,7 +300,8 @@ int main(int argc, char *argv[])
         testsPassed = false;
 
     basicSgemm_d_tiled(a_h, b_h, c_h, m, k, n);
-    // if(!verify(c_h, cpu_result, m, n, precision)) testsPassed = false;
+    if (!verify(c_h, cpu_result, m, n, precision))
+        testsPassed = false;
 
     if (testsPassed)
     {
