@@ -127,14 +127,12 @@ __global__ void matrixMulKernel_tiled(float *a_d, float *b_d, float *c_d, unsign
 
     float sum = 0.0f;
 
-    // int condition = (int) ceilf( k / (float)tile_size);
-
     for (int tile = 0; tile < (k - 1) / tile_size + 1; ++tile)
     {
 
         if (tile * tile_size + threadIdx.x < k && row < m)
         {
-            A_s[threadIdx.y * tile_size + threadIdx.x] = a_d[row * n + tile * tile_size + threadIdx.x];
+            A_s[threadIdx.y * tile_size + threadIdx.x] = a_d[row * k + tile * tile_size + threadIdx.x];
         }
         else
         {
