@@ -91,12 +91,6 @@ void basicSgemm_h(float *a_h, float *b_h, float *c_h, unsigned int m, unsigned i
 
         c_h[outputMatrixIndex] = sum;
     }
-
-    printf("CPU\n");
-    for (int i = 0; i < m * n; i++)
-    {
-        printf("%f ", c_h[i]);
-    }
 }
 
 __global__ void matrixMulKernel_1thread1element(float *a_d, float *b_d, float *c_d, unsigned int m, unsigned int k, unsigned int n)
@@ -114,7 +108,7 @@ __global__ void matrixMulKernel_1thread1element(float *a_d, float *b_d, float *c
     }
 }
 
-__global__ void matrixMulKernel_tiled(float *a_d, float *b_d, float *c_d, unsigned int m, unsigned int k, unsigned int n, int tile_size, int As_size, int Bs_size)
+__global__ void matrixMulKernel_tiled(float *a_d, float *b_d, float *c_d, unsigned int m, unsigned int k, unsigned int n, int tile_size, int As_size)
 {
 
     extern __shared__ float As_Bs[];
@@ -169,15 +163,27 @@ __global__ void matrixMulKernel_tiled(float *a_d, float *b_d, float *c_d, unsign
 void basicSgemm_d_1thread1element(float *a_h, float *b_h, float *c_h, unsigned int m, unsigned int k, unsigned int n)
 {
 
+    printf("\n\nbasicSgemm_d_1thread1element: \n");
+
     // (1) allocate device memory for arrays x_d, y_d, z_d
     float *a_d, *b_d, *c_d;
+    double start_time_malloc = myCPUTimer();
     cudaMalloc((void **)&a_d, sizeof(float) * m * k);
     cudaMalloc((void **)&b_d, sizeof(float) * k * n);
     cudaMalloc((void **)&c_d, sizeof(float) * m * n);
+    double end_time_malloc = myCPUTimer();
+    double elapsed_time_malloc = end_time_malloc - start_time_malloc;
+
+    printf("\tcudaMalloc: \t\t\t\t\t\t\t\t%f s\n", elapsed_time_malloc);
 
     // (2) copy matrices a_h and b_h to device memory a_d and b_d, respectively
+    double start_time_memcpy = myCPUTimer();
     cudaMemcpy(a_d, a_h, sizeof(float) * m * k, cudaMemcpyHostToDevice);
     cudaMemcpy(b_d, b_h, sizeof(float) * k * n, cudaMemcpyHostToDevice);
+    double end_time_memcpy = myCPUTimer();
+    double elapsed_time_memcpy = end_time_memcpy - start_time_memcpy;
+
+    printf("\tcudaMemcpy: \t\t\t\t\t\t\t\t%f s\n", elapsed_time_memcpy);
 
     // (3) call kernel to launch a grid of threads to perform the matrix multiplcation on GPU
     dim3 gridDim((n + 16 - 1) / 16, (m + 16 - 1) / 16);
@@ -190,16 +196,19 @@ void basicSgemm_d_1thread1element(float *a_h, float *b_h, float *c_h, unsigned i
     double end_time = myCPUTimer();
     double elapsed_time = end_time - start_time;
 
-    printf("\nElapsed time of 1 thread 1 output element: %f s\n", elapsed_time);
+    printf("\tmatrixMulKernel_1thread1element<<<(%d, %d, 1), (%d, %d, 1)>>>: \t\t%f s\n", (n + 16 - 1) / 16, (m + 16 - 1) / 16, 16, 16, elapsed_time);
 
     // (4) Copy the result data from device memory of array c_d to host memory of array c_h
+    double start_time_memcpy2 = myCPUTimer();
     cudaMemcpy(c_h, c_d, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
+    double end_time_memcpy2 = myCPUTimer();
+    double elapsed_time_memcpy2 = end_time_memcpy2 - start_time_memcpy2;
 
-    printf("\n");
-    for (int i = 0; i < m * n; i++)
-    {
-        printf("%f ", c_h[i]);
-    }
+    printf("\tcudaMemcpy: \t\t\t\t\t\t\t\t%f s\n\n", elapsed_time_memcpy2);
+
+    double total_elapsed_time = elapsed_time_malloc + elapsed_time_memcpy + elapsed_time + elapsed_time_memcpy2;
+
+    printf("Total elapsed time for one thread one matrix element: %f s\n", total_elapsed_time);
 
     // (5) free device memory of a_d, b_d, and c_d
     cudaFree(a_d);
@@ -210,15 +219,27 @@ void basicSgemm_d_1thread1element(float *a_h, float *b_h, float *c_h, unsigned i
 void basicSgemm_d_tiled(float *a_h, float *b_h, float *c_h, unsigned int m, unsigned int k, unsigned int n)
 {
 
+    printf("\n\nbasicSgemm_d_tiled: \n");
+
     // (1) allocate device memory for arrays x_d, y_d, z_d
     float *a_d, *b_d, *c_d;
+    double start_time_malloc = myCPUTimer();
     cudaMalloc((void **)&a_d, sizeof(float) * m * k);
     cudaMalloc((void **)&b_d, sizeof(float) * k * n);
     cudaMalloc((void **)&c_d, sizeof(float) * m * n);
+    double end_time_malloc = myCPUTimer();
+    double elapsed_time_malloc = end_time_malloc - start_time_malloc;
+
+    printf("\tcudaMalloc: \t\t\t\t\t\t\t\t%f s\n", elapsed_time_malloc);
 
     // (2) copy matrices a_h and b_h to device memory a_d and b_d, respectively
+    double start_time_memcpy = myCPUTimer();
     cudaMemcpy(a_d, a_h, sizeof(float) * m * k, cudaMemcpyHostToDevice);
     cudaMemcpy(b_d, b_h, sizeof(float) * k * n, cudaMemcpyHostToDevice);
+    double end_time_memcpy = myCPUTimer();
+    double elapsed_time_memcpy = end_time_memcpy - start_time_memcpy;
+
+    printf("\tcudaMemcpy: \t\t\t\t\t\t\t\t%f s\n", elapsed_time_memcpy);
 
     // (3) call kernel to launch a grid of threads to perform the matrix multiplcation on GPU
     cudaDeviceProp devProp;
@@ -232,26 +253,26 @@ void basicSgemm_d_tiled(float *a_h, float *b_h, float *c_h, unsigned int m, unsi
     dim3 blockDim(TILE_SIZE, TILE_SIZE);
     unsigned int dynamicallyConfiguredSharedMemorySize = 2 * TILE_SIZE * TILE_SIZE * sizeof(float);
 
-    printf("\nGrid Dimensions: %d, %d, 1\n", (n + TILE_SIZE - 1) / TILE_SIZE, (m + TILE_SIZE - 1) / TILE_SIZE);
-    printf("\nBlock Dimensions: %d, %d, 1\n", TILE_SIZE, TILE_SIZE);
-
     double start_time = myCPUTimer();
-    matrixMulKernel_tiled<<<gridDim, blockDim, dynamicallyConfiguredSharedMemorySize>>>(a_d, b_d, c_d, m, k, n, TILE_SIZE, As_size, As_size);
+    matrixMulKernel_tiled<<<gridDim, blockDim, dynamicallyConfiguredSharedMemorySize>>>(a_d, b_d, c_d, m, k, n, TILE_SIZE, As_size);
     CHECK(cudaGetLastError());
     CHECK(cudaDeviceSynchronize());
     double end_time = myCPUTimer();
     double elapsed_time = end_time - start_time;
 
-    printf("\n\nElapsed time of 1 thread 1 output element with shared memory: %f s\n", elapsed_time);
+    printf("\tmatrixMulKernel_tiled<<<(%d, %d, 1), (%d, %d, 1), %d>>>: \t\t%f s\n", (n + TILE_SIZE - 1) / TILE_SIZE, (m + TILE_SIZE - 1) / TILE_SIZE, TILE_SIZE, TILE_SIZE, dynamicallyConfiguredSharedMemorySize, elapsed_time);
 
     // (4) Copy the result data from device memory of array c_d to host memory of array c_h
+    double start_time_memcpy2 = myCPUTimer();
     cudaMemcpy(c_h, c_d, sizeof(float) * m * n, cudaMemcpyDeviceToHost);
+    double end_time_memcpy2 = myCPUTimer();
+    double elapsed_time_memcpy2 = end_time_memcpy2 - start_time_memcpy2;
 
-    printf("\n");
-    for (int i = 0; i < m * n; i++)
-    {
-        printf("%f ", c_h[i]);
-    }
+    printf("\tcudaMemcpy: \t\t\t\t\t\t\t\t%f s\n\n", elapsed_time_memcpy2);
+
+    double total_elapsed_time = elapsed_time_malloc + elapsed_time_memcpy + elapsed_time + elapsed_time_memcpy2;
+
+    printf("Total elapsed time for tiled matrix with shared memory: %f s\n", total_elapsed_time);
 
     // (5) free device memory of a_d, b_d, and c_d
     cudaFree(a_d);
@@ -283,13 +304,17 @@ int main(int argc, char *argv[])
 
     int precision = calculatePrecision(m, k, n);
 
-    basicSgemm_h(a_h, b_h, cpu_result, m, k, n);
-
-    printf("\nPrecision Threshold: %d decimal places.\n", precision);
     printf("\nMatrix Dimensions: \n");
     printf("\tA: %d x %d\n", m, k);
     printf("\tB: %d x %d\n", k, n);
     printf("\tC: %d x %d\n", m, n);
+
+    double start_time = myCPUTimer();
+    basicSgemm_h(a_h, b_h, cpu_result, m, k, n);
+    double end_time = myCPUTimer();
+    double elapsed_time = end_time - start_time;
+
+    printf("\nMatrix multiplication on CPU: %f s\n", elapsed_time);
 
     bool testsPassed = true;
 
@@ -301,13 +326,14 @@ int main(int argc, char *argv[])
     if (!verify(c_h, cpu_result, m, n, precision))
         testsPassed = false;
 
+    printf("\nPrecision Threshold: %d decimal places.\n", precision);
     if (testsPassed)
     {
-        printf("\nVerifying Results... Tests Passed!\n");
+        printf("Verifying Results... TEST PASSED!\n");
     }
     else
     {
-        printf("\nVerifying Results... Tests Failed!\n");
+        printf("Verifying Results... TEST FAILED!\n");
     }
 
     free(a_h);
