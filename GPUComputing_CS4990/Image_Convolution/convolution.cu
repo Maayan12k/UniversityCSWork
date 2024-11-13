@@ -10,6 +10,9 @@ using namespace std;
 using namespace cv;
 
 #define FILTER_RADIUS 2
+#define IN_TILE_DIM 32
+#define OUT_TILE_DIM ((IN_TILE_DIM) - 2 * (FILTER_RADIUS))
+
 const float F_h[2 * FILTER_RADIUS + 1][2 * FILTER_RADIUS + 1] = {
     {1.0f / 25, 1.0f / 25, 1.0f / 25, 1.0f / 25, 1.0f / 25},
     {1.0f / 25, 1.0f / 25, 1.0f / 25, 1.0f / 25, 1.0f / 25},
@@ -166,7 +169,7 @@ void blurImage_d(cv::Mat Pout_Mat_h, cv::Mat Pin_Mat_h, unsigned int nRows, unsi
     dim3 blockDim(32, 32);
 
     double start_time = myCPUTimer();
-    blurImage_Kernel<<<gridDim, blockDim>>>(Pout_d, Pin_d, nRows, nCols);
+    blurImage_Kernel<<<gridDim, blockDim>>>(Pout_d, Pin_d, nCols, nRows);
     CHECK(cudaGetLastError());
     CHECK(cudaDeviceSynchronize());
     double end_time = myCPUTimer();
@@ -182,11 +185,101 @@ void blurImage_d(cv::Mat Pout_Mat_h, cv::Mat Pin_Mat_h, unsigned int nRows, unsi
     double end_time_memcpy2 = myCPUTimer();
     double elapsed_time_memcpy2 = end_time_memcpy2 - start_time_memcpy2;
 
-    // printf("\n\n\n");
-    // for(int i = 0; i < nCols*nRows; i++){
-    //     printf("%hhu ", Pout_h);
-    // }
-    // printf("\n\n\n");
+    printf("\tcudaMemcpy: \t\t\t\t\t\t\t\t%f s\n\n", elapsed_time_memcpy2);
+
+    double total_elapsed_time = elapsed_time_malloc + elapsed_time_memcpy + elapsed_time + elapsed_time_memcpy2;
+
+    printf("Total elapsed time for convolution without tiling: %f s\n", total_elapsed_time);
+
+    // (5) free device memory of Pin_d and Pout_d
+    cudaFree(Pin_d);
+    cudaFree(Pout_d);
+}
+
+__global__ void blurImage_tiled_Kernel(unsigned char *Pout, unsigned char *Pin, unsigned int width, unsigned int height)
+{
+    int col = blockIdx.x * OUT_TILE_DIM + threadIdx.x - FILTER_RADIUS;
+    int row = blockIdx.y * OUT_TILE_DIM + threadIdx.y - FILTER_RADIUS;
+
+    // Loading input tile
+    __shared__ float N_s[IN_TILE_DIM][IN_TILE_DIM];
+    if (row >= 0 && row < height && col >= 0 && col < width)
+    {
+        N_s[threadIdx.y][threadIdx.x] = N[row * width + col];
+    }
+    else
+    {
+        N_s[threadIdx.y][threadIdx.x] = 0.0;
+    }
+
+    syncthreads();
+
+    // Calculating output elements
+    int tileCol = threadIdx.x - FILTER_RADIUS;
+    int tileRow = threadIdx.y - FILTER_RADIUS;
+
+    // turning off the threads at the edges of the block
+    if (col >= 0 && col < width && row >= 0 && row < height)
+    {
+        if (tileCol >= 0 && tileCol < OUT_TILE_DIM && tileRow >= 0 && tileRow < OUT_TILE_DIM)
+        {
+            float Pvalue = 0.0f;
+            for (int fRow = 0; fRow < 2 * FILTER_RADIUS + 1; fRow++)
+            {
+                for (int fCol = 0; fCol < 2 * FILTER_RADIUS + 1; fCol++)
+                {
+                    Pvalue += F[fRow][fCol] * Pin[tileRow + fRow][tileCol + fCol];
+                }
+            }
+            Pout[row * width + col] = Pvalue;
+        }
+    }
+}
+
+void blurImage_tiled_d(cv::Mat Pout_Mat_h, cv::Mat Pin_Mat_h, unsigned int nRows, unsigned int nCols)
+{
+
+    printf("\n\nblurImage_tiled_Kernel: \n");
+
+    // (1) allocate device memory for arrays p_d
+    unsigned char *Pin_d, *Pout_d;
+    double start_time_malloc = myCPUTimer();
+    cudaMalloc((void **)&Pin_d, sizeof(unsigned char) * nRows * nCols);
+    cudaMalloc((void **)&Pout_d, sizeof(unsigned char) * nRows * nCols);
+    double end_time_malloc = myCPUTimer();
+    double elapsed_time_malloc = end_time_malloc - start_time_malloc;
+
+    printf("\tcudaMalloc: \t\t\t\t\t\t\t\t%f s\n", elapsed_time_malloc);
+
+    // (2) copy image matrix Pin_h to device memory Pin_d
+    unsigned char *Pin_h = Pin_Mat_h.data;
+    double start_time_memcpy = myCPUTimer();
+    cudaMemcpy(Pin_d, Pin_h, sizeof(unsigned char) * nCols * nRows, cudaMemcpyHostToDevice);
+    double end_time_memcpy = myCPUTimer();
+    double elapsed_time_memcpy = end_time_memcpy - start_time_memcpy;
+
+    printf("\tcudaMemcpy: \t\t\t\t\t\t\t\t%f s\n", elapsed_time_memcpy);
+
+    // (3) call kernel to launch a grid of threads to perform the image convolution on GPU
+    dim3 gridDim((nRows + OUT_TILE_DIM - 1) / OUT_TILE_DIM, (nCols + OUT_TILE_DIM - 1) / OUT_TILE_DIM);
+    dim3 blockDim(32, 32);
+
+    double start_time = myCPUTimer();
+    blurImage_tiled_Kernel<<<gridDim, blockDim>>>(Pout_d, Pin_d, nCols, nRows);
+    CHECK(cudaGetLastError());
+    CHECK(cudaDeviceSynchronize());
+    double end_time = myCPUTimer();
+    double elapsed_time = end_time - start_time;
+
+    printf("\tblurImage_tiled_Kernel<<<(%d, %d, 1), (%d, %d, 1), >>>: \t\t\t%f s\n", (nCols + 32 - 1) / 32, (nRows + 32 - 1) / 32, 32, 32, elapsed_time);
+
+    // (4) Copy the result data from device memory of array Pout_d to host memory of array Pout_h
+    Pout_Mat_h = cv::Mat::zeros(nRows, nCols, CV_8U);
+    unsigned char *Pout_h = Pout_Mat_h.data;
+    double start_time_memcpy2 = myCPUTimer();
+    cudaMemcpy(Pout_h, Pout_d, sizeof(unsigned char) * nCols * nRows, cudaMemcpyDeviceToHost);
+    double end_time_memcpy2 = myCPUTimer();
+    double elapsed_time_memcpy2 = end_time_memcpy2 - start_time_memcpy2;
 
     printf("\tcudaMemcpy: \t\t\t\t\t\t\t\t%f s\n\n", elapsed_time_memcpy2);
 
@@ -223,9 +316,9 @@ int main(int argc, char *argv[])
     printf("\nOpenCV filter2D(image, blurred,  -1, kernel1): %f s\n", elapsed_time);
 
     // for comparison purpose, implement a CPU version
-    Mat blurred_imaged;
+    Mat blurred_imaged(nRows, nCols, CV_8U);
     start_time = myCPUTimer();
-    blurImage_h(blurred_imaged, Pin_Mat_h, nRows, nCols);
+    blurImage_h(blurred_imaged, Pin_Mat_h, nCols, nRows);
     end_time = myCPUTimer();
     elapsed_time = end_time - start_time;
 
@@ -261,6 +354,19 @@ int main(int argc, char *argv[])
     imwrite(filename_kernel, Pout_Mat_h);
 
     // for comparison purpose, implement a CUDA kernel but with tiling and constant memory
+    Mat Pout_Mat_h_tiled(nRows, nCols, CV_8U);
+    blurImage_tiled_d(Pout_Mat_h_tiled, Pin_Mat_h, nRows, nCols);
+
+    std::ostringstream oss_kernel_tiled;
+    oss_kernel_tiled << "blurred_kernel("
+                     << (now->tm_year + 1900) << '-'
+                     << (now->tm_mon + 1) << '-'
+                     << now->tm_mday << '_'
+                     << now->tm_sec
+                     << ").jpg";
+
+    std::string filename_kernel_tiled = oss_kernel_tiled.str();
+    imwrite(filename_kernel_tiled, Pout_Mat_h_tiled);
 
     return 0;
 }
