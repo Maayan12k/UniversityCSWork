@@ -87,31 +87,6 @@ Mat opencv_convolution(Mat bwImage)
     return blurred;
 }
 
-// void blurImage_h(Mat &Pout_Mat_h, const cv::Mat &Pin_Mat_h, unsigned int nRows, unsigned int nCols)
-// {
-
-//     Pout_Mat_h = Mat::zeros(nRows, nCols, CV_8U);
-
-//     const float filterValue = 1.0f / 25.0f;
-
-//     for (int i = FILTER_RADIUS; i < nRows - FILTER_RADIUS; i++)
-//     {
-//         for (int j = FILTER_RADIUS; j < nCols - FILTER_RADIUS; j++)
-//         {
-
-//             float sum = 0.0f;
-//             for (int k = -FILTER_RADIUS; k <= FILTER_RADIUS; k++)
-//             {
-//                 for (int l = -FILTER_RADIUS; l <= FILTER_RADIUS; l++)
-//                 {
-//                     sum += filterValue * Pin_Mat_h.at<unsigned char>(i + k, j + l);
-//                 }
-//             }
-//             Pout_Mat_h.at<unsigned char>(i, j) = sum;
-//         }
-//     }
-// }
-
 void blurImage_h(Mat &Pout_Mat_h, const cv::Mat &Pin_Mat_h, unsigned int nRows, unsigned int nCols)
 {
     // Initialize output image with zeros
@@ -124,25 +99,34 @@ void blurImage_h(Mat &Pout_Mat_h, const cv::Mat &Pin_Mat_h, unsigned int nRows, 
         for (int j = 0; j < nCols; j++)
         {
 
-            float sum = 0.0f;
-
-            // Apply filter, accounting for borders
-            for (int k = -FILTER_RADIUS; k <= FILTER_RADIUS; k++)
+            // Check if the current pixel is within the border region
+            if (i < FILTER_RADIUS || i >= nRows - FILTER_RADIUS || j < FILTER_RADIUS || j >= nCols - FILTER_RADIUS)
             {
-                for (int l = -FILTER_RADIUS; l <= FILTER_RADIUS; l++)
+                // Copy the border pixel directly to the output
+                Pout_Mat_h.at<unsigned char>(i, j) = Pin_Mat_h.at<unsigned char>(i, j);
+            }
+            else
+            {
+                // Apply the filter for non-border pixels
+                float sum = 0.0f;
+                for (int k = -FILTER_RADIUS; k <= FILTER_RADIUS; k++)
                 {
-                    int inRow = i + k;
-                    int inCol = j + l;
-
-                    // Only add values from valid neighboring pixels within bounds
-                    if (inRow >= 0 && inRow < nRows && inCol >= 0 && inCol < nCols)
+                    for (int l = -FILTER_RADIUS; l <= FILTER_RADIUS; l++)
                     {
-                        sum += filterValue * Pin_Mat_h.at<unsigned char>(inRow, inCol);
+                        int inRow = i + k;
+                        int inCol = j + l;
+
+                        // Only add values from valid neighboring pixels within bounds
+                        if (inRow >= 0 && inRow < nRows && inCol >= 0 && inCol < nCols)
+                        {
+                            sum += filterValue * Pin_Mat_h.at<unsigned char>(inRow, inCol);
+                        }
                     }
                 }
-            }
 
-            Pout_Mat_h.at<unsigned char>(i, j) = static_cast<unsigned char>(std::min(std::max(sum, 0.0f), 255.0f));
+                // Assign the calculated sum to the output pixel
+                Pout_Mat_h.at<unsigned char>(i, j) = static_cast<unsigned char>(std::min(std::max(sum, 0.0f), 255.0f));
+            }
         }
     }
 }
@@ -152,26 +136,39 @@ __global__ void blurImage_Kernel(unsigned char *Pout, unsigned char *Pin, unsign
     int outCol = blockIdx.x * blockDim.x + threadIdx.x;
     int outRow = blockIdx.y * blockDim.y + threadIdx.y;
 
+    // Check if the current pixel is within the image bounds
     if (outCol < width && outRow < height)
     {
-        float Pvalue = 0.0f;
-        int inRow = 0, inCol = 0;
-        int condition = 2 * FILTER_RADIUS + 1;
-
-        for (int fRow = 0; fRow < condition; fRow++)
+        // Check if the current pixel is within the border region
+        if (outRow < FILTER_RADIUS || outRow >= height - FILTER_RADIUS ||
+            outCol < FILTER_RADIUS || outCol >= width - FILTER_RADIUS)
         {
-            for (int fCol = 0; fCol < condition; fCol++)
+            // Directly copy the border pixel from input to output
+            Pout[outRow * width + outCol] = Pin[outRow * width + outCol];
+        }
+        else
+        {
+            // Apply the filter for non-border pixels
+            float Pvalue = 0.0f;
+            int inRow, inCol;
+            int condition = 2 * FILTER_RADIUS + 1;
+
+            for (int fRow = 0; fRow < condition; fRow++)
             {
-                inRow = outRow - FILTER_RADIUS + fRow;
-                inCol = outCol - FILTER_RADIUS + fCol;
-                if (inRow >= 0 && inRow < height && inCol >= 0 && inCol < width)
+                for (int fCol = 0; fCol < condition; fCol++)
                 {
-                    Pvalue += F[fRow][fCol] * (float)Pin[inRow * width + inCol];
+                    inRow = outRow - FILTER_RADIUS + fRow;
+                    inCol = outCol - FILTER_RADIUS + fCol;
+                    if (inRow >= 0 && inRow < height && inCol >= 0 && inCol < width)
+                    {
+                        Pvalue += F[fRow][fCol] * (float)Pin[inRow * width + inCol];
+                    }
                 }
             }
-        }
 
-        Pout[outRow * width + outCol] = (unsigned char)min(max(Pvalue, 0.0f), 255.0f);
+            // Assign the calculated Pvalue to the output pixel
+            Pout[outRow * width + outCol] = (unsigned char)min(max(Pvalue, 0.0f), 255.0f);
+        }
     }
 }
 
@@ -253,20 +250,30 @@ __global__ void blurImage_tiled_Kernel(unsigned char *Pout, unsigned char *Pin, 
     int tileCol = threadIdx.x - FILTER_RADIUS;
     int tileRow = threadIdx.y - FILTER_RADIUS;
 
-    // turning off the threads at the edges of the block
+    // Check if the current pixel is within the image bounds (avoid accessing out-of-bounds memory)
     if (col >= 0 && col < width && row >= 0 && row < height)
     {
-        if (tileCol >= 0 && tileCol < OUT_TILE_DIM && tileRow >= 0 && tileRow < OUT_TILE_DIM)
+        // Skip processing for border pixels (leave them unchanged)
+        if (row < FILTER_RADIUS || row >= height - FILTER_RADIUS || col < FILTER_RADIUS || col >= width - FILTER_RADIUS)
         {
-            float Pvalue = 0.0f;
-            for (int fRow = 0; fRow < 2 * FILTER_RADIUS + 1; fRow++)
+            // Copy the border pixel directly from input to output
+            Pout[row * width + col] = Pin[row * width + col];
+        }
+        else
+        {
+            // Apply the filter for non-border pixels
+            if (tileCol >= 0 && tileCol < OUT_TILE_DIM && tileRow >= 0 && tileRow < OUT_TILE_DIM)
             {
-                for (int fCol = 0; fCol < 2 * FILTER_RADIUS + 1; fCol++)
+                float Pvalue = 0.0f;
+                for (int fRow = 0; fRow < 2 * FILTER_RADIUS + 1; fRow++)
                 {
-                    Pvalue += F[fRow][fCol] * N_s[tileRow + fRow][tileCol + fCol];
+                    for (int fCol = 0; fCol < 2 * FILTER_RADIUS + 1; fCol++)
+                    {
+                        Pvalue += F[fRow][fCol] * N_s[tileRow + fRow][tileCol + fCol];
+                    }
                 }
+                Pout[row * width + col] = Pvalue;
             }
-            Pout[row * width + col] = Pvalue;
         }
     }
 }
