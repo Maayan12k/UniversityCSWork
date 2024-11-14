@@ -87,27 +87,62 @@ Mat opencv_convolution(Mat bwImage)
     return blurred;
 }
 
+// void blurImage_h(Mat &Pout_Mat_h, const cv::Mat &Pin_Mat_h, unsigned int nRows, unsigned int nCols)
+// {
+
+//     Pout_Mat_h = Mat::zeros(nRows, nCols, CV_8U);
+
+//     const float filterValue = 1.0f / 25.0f;
+
+//     for (int i = FILTER_RADIUS; i < nRows - FILTER_RADIUS; i++)
+//     {
+//         for (int j = FILTER_RADIUS; j < nCols - FILTER_RADIUS; j++)
+//         {
+
+//             float sum = 0.0f;
+//             for (int k = -FILTER_RADIUS; k <= FILTER_RADIUS; k++)
+//             {
+//                 for (int l = -FILTER_RADIUS; l <= FILTER_RADIUS; l++)
+//                 {
+//                     sum += filterValue * Pin_Mat_h.at<unsigned char>(i + k, j + l);
+//                 }
+//             }
+//             Pout_Mat_h.at<unsigned char>(i, j) = sum;
+//         }
+//     }
+// }
+
 void blurImage_h(Mat &Pout_Mat_h, const cv::Mat &Pin_Mat_h, unsigned int nRows, unsigned int nCols)
 {
-
+    // Initialize output image with zeros
     Pout_Mat_h = Mat::zeros(nRows, nCols, CV_8U);
 
     const float filterValue = 1.0f / 25.0f;
 
-    for (int i = FILTER_RADIUS; i < nRows - FILTER_RADIUS; i++)
+    for (int i = 0; i < nRows; i++)
     {
-        for (int j = FILTER_RADIUS; j < nCols - FILTER_RADIUS; j++)
+        for (int j = 0; j < nCols; j++)
         {
 
             float sum = 0.0f;
+
+            // Apply filter, accounting for borders
             for (int k = -FILTER_RADIUS; k <= FILTER_RADIUS; k++)
             {
                 for (int l = -FILTER_RADIUS; l <= FILTER_RADIUS; l++)
                 {
-                    sum += filterValue * Pin_Mat_h.at<unsigned char>(i + k, j + l);
+                    int inRow = i + k;
+                    int inCol = j + l;
+
+                    // Only add values from valid neighboring pixels within bounds
+                    if (inRow >= 0 && inRow < nRows && inCol >= 0 && inCol < nCols)
+                    {
+                        sum += filterValue * Pin_Mat_h.at<unsigned char>(inRow, inCol);
+                    }
                 }
             }
-            Pout_Mat_h.at<unsigned char>(i, j) = sum;
+
+            Pout_Mat_h.at<unsigned char>(i, j) = static_cast<unsigned char>(std::min(std::max(sum, 0.0f), 255.0f));
         }
     }
 }
@@ -140,7 +175,7 @@ __global__ void blurImage_Kernel(unsigned char *Pout, unsigned char *Pin, unsign
     }
 }
 
-void blurImage_d(cv::Mat Pout_Mat_h, cv::Mat Pin_Mat_h, unsigned int nRows, unsigned int nCols)
+void blurImage_d(Mat Pout_Mat_h, Mat Pin_Mat_h, unsigned int nRows, unsigned int nCols)
 {
 
     printf("\n\nblurImage_Kernel: \n");
@@ -178,7 +213,7 @@ void blurImage_d(cv::Mat Pout_Mat_h, cv::Mat Pin_Mat_h, unsigned int nRows, unsi
     printf("\tblurImage_Kernel<<<(%d, %d, 1), (%d, %d, 1)>>>: \t\t\t%f s\n", (nCols + 32 - 1) / 32, (nRows + 32 - 1) / 32, 32, 32, elapsed_time);
 
     // (4) Copy the result data from device memory of array Pout_d to host memory of array Pout_h
-    Pout_Mat_h = cv::Mat::zeros(nRows, nCols, CV_8U);
+    Pout_Mat_h = Mat::zeros(nRows, nCols, CV_8U);
     unsigned char *Pout_h = Pout_Mat_h.data;
     double start_time_memcpy2 = myCPUTimer();
     cudaMemcpy(Pout_h, Pout_d, sizeof(unsigned char) * nCols * nRows, cudaMemcpyDeviceToHost);
@@ -306,7 +341,7 @@ int main(int argc, char *argv[])
     Mat Pin_Mat_h = cv::imread(file_name, IMREAD_GRAYSCALE);
     unsigned int nRows = Pin_Mat_h.rows, nCols = Pin_Mat_h.cols, nChannels = Pin_Mat_h.channels();
 
-    printf("\n Dimension of image: %d %d \n", nRows, nCols);
+    printf("\nDimension of image: %d %d \n", nRows, nCols);
 
     double start_time = myCPUTimer();
     Mat blurred_mat = opencv_convolution(Pin_Mat_h);
@@ -373,8 +408,6 @@ int main(int argc, char *argv[])
     verify(Pout_Mat_h_tiled, Pout_Mat_h_CPU, nRows, nCols);
 
     verify(Pout_Mat_h, Pout_Mat_h_CPU, nRows, nCols);
-
-    verify(Pout_Mat_h_CPU, Pout_Mat_h_CPU, nRows, nCols);
 
     return 0;
 }
