@@ -23,8 +23,12 @@ This repository is organized into five main areas:
    - Includes iterative methods, matrix operations, and polynomial manipulation.
 
 5. **GPU Computing**
-   - Introductory work in massively parallel programming using CUDA C on NCSA GPUs.
-   - [Space to add future projects/programs here].
+   - Practical experience with massively parallel programming using CUDA C, executed on the NCSA Delta supercomputer node.
+   - Custom CUDA kernels for:
+      - **Matrix Multiplication**: Multiple versions optimized for performance benchmarking.
+      - **Vector Multiplication**: High-performance implementations.
+      - **Convolution Operations**: Designed to measure and compare performance under varying conditions.
+   - Focuses on performance measurements and optimizations for parallel computation.
 
 ---
 
@@ -36,7 +40,7 @@ This repository follows a progression from understanding **low-level hardware in
 - **Computer Architecture** bridges the gap between software and hardware, providing a deeper understanding of how code executes on real machines.
 - **Data Structures and Algorithms** take the lessons from lower levels and apply them to build scalable and optimized solutions for complex computational problems.
 - **Numerical Methods** showcases the application of computational techniques to solve scientific and engineering problems.
-- **GPU Computing** introduces the power of parallel processing to handle data-intensive computations, enhancing performance significantly.
+- **GPU Computing** demonstrates the power of parallel processing to accelerate data-intensive computations and highlights the importance of performance optimization in modern computing.
 
 ---
 
@@ -48,4 +52,4 @@ Each directory corresponds to one of the five focus areas. Inside each directory
 - **ComputerArchitecture/**: Projects exploring the design and performance of computer systems.
 - **DataStructuresAlgorithms/**: Implementations of common data structures and algorithms.
 - **NumericalMethods/**: Numerical computation projects tackling mathematical problems.
-- **GPUComputing/**: CUDA C programs focusing on parallel computing techniques.
+- **GPUComputing/**: CUDA C programs focusing on parallel computing techniques, with performance measurements and custom kernel implementations.
