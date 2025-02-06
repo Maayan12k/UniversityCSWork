@@ -17,17 +17,22 @@ import java.io.FileNotFoundException;
 public class ProgrammingProjectGraphAlgorithms {
 
     public static void main(String[] args) throws FileNotFoundException {
-        // runTests();
-        ProgrammingProjectGraphAlgorithms proj = new ProgrammingProjectGraphAlgorithms();
-        System.out.println("\nShortest waiting time: " +
-                proj.calculateShortestWaitingTime());
+        runTests();
+        // ProgrammingProjectGraphAlgorithms proj = new
+        // ProgrammingProjectGraphAlgorithms();
+        // System.out.println("\nShortest waiting time: " +
+        // proj.calculateShortestWaitingTime());
 
     }
 
     public static void runTests() throws FileNotFoundException {
         System.out.println("\nNegative files: ");
-        String[] negativeOneFiles = { "./tests/false1.txt", "./tests/false2.txt", "./tests/false3.txt",
-                "./tests/false4.txt", "./tests/false5.txt", "./tests/false6.txt", "./tests/false7.txt" };
+        // String[] negativeOneFiles = { "./tests/1.txt", "./tests/2.txt",
+        // "./tests/3.txt",
+        // "./tests/4.txt", "./tests/5.txt", "./tests/6.txt", "./tests/7.txt",
+        // "./tests/8.txt", "./tests/9.txt" };
+
+        String[] negativeOneFiles = { "./tests/9.txt" };
 
         for (String file : negativeOneFiles) {
             ProgrammingProjectGraphAlgorithms proj = new ProgrammingProjectGraphAlgorithms(file);
@@ -35,15 +40,17 @@ public class ProgrammingProjectGraphAlgorithms {
                     proj.calculateShortestWaitingTime());
         }
 
-        System.out.println("\n\n\n\n\n Positive files: \n\n");
-        String[] positiveFiles = { "./tests/input1.txt", "./tests/input2.txt", "./tests/input3.txt",
-                "./tests/input4.txt", "./tests/input5.txt" };
+        // System.out.println("\n\n\n\n\n Positive files: \n\n");
+        // String[] positiveFiles = { "./tests/input1.txt", "./tests/input2.txt",
+        // "./tests/input3.txt",
+        // "./tests/input4.txt", "./tests/input5.txt" };
 
-        for (String file : positiveFiles) {
-            ProgrammingProjectGraphAlgorithms proj = new ProgrammingProjectGraphAlgorithms(file);
-            System.out.println("\nShortest waiting time: " +
-                    proj.calculateShortestWaitingTime());
-        }
+        // for (String file : positiveFiles) {
+        // ProgrammingProjectGraphAlgorithms proj = new
+        // ProgrammingProjectGraphAlgorithms(file);
+        // System.out.println("\nShortest waiting time: " +
+        // proj.calculateShortestWaitingTime());
+        // }
     }
 
     AdjacencyMapGraph<Integer, Integer> graph;
@@ -182,15 +189,18 @@ public class ProgrammingProjectGraphAlgorithms {
 
         int index = 1;
         while (index <= size) {
+            System.out.println("Index: " + index);
             int max = 0;
             ArrayList<Integer> src = mapSrc.get(index);
             ArrayList<Integer> dest = mapDest.get(index);
 
             int srcSum = 0;
+            // if (src != null)
             for (int entry : src)
                 srcSum += entry;
 
             int destSum = 0;
+            // if (dest != null)
             for (int entry : dest)
                 destSum += entry;
 
