@@ -1,10 +1,10 @@
 # Computer Science Work Repository
 
-This repository showcases a collection of projects and assignments that span multiple core areas of computer science, from low-level hardware interactions to high-level algorithmic problem solving. It represents a comprehensive foundation in understanding computer systems, data structures, and algorithms, which are essential for developing efficient software.
+This repository showcases a collection of projects and assignments spanning core areas of computer science, from low-level hardware interactions to high-level algorithmic problem-solving, machine learning, and artificial intelligence. It reflects a strong foundation in computer systems, algorithms, and data-driven computing.
 
 ## Repository Overview
 
-This repository is organized into five main areas:
+This repository is organized into six main areas:
 
 1. **Assembly Language**
    - Low-level programming using assembly language, focusing on direct interaction with hardware components.
@@ -29,10 +29,14 @@ This repository is organized into five main areas:
       - **Vector Multiplication**: High-performance implementations.
       - **Convolution Operations**: Designed to measure and compare performance under varying conditions.
    - Focuses on performance measurements and optimizations for parallel computation.
+6. **Machine Learning & AI**
+   - Practical experience with machine learning techniques and theory.
+   - Supervised Learning: Implementations of regression, classification, and neural networks.
+   - Unsupervised Learning: Clustering techniques and dimensionality reduction.
 
 ---
 
-## The Learning Journey: From Hardware to Algorithms
+## The Learning Journey: From Hardware to Intelligent Systems
 
 This repository follows a progression from understanding **low-level hardware interactions** in Assembly Language and Computer Architecture to mastering **high-level algorithmic thinking** in Data Structures and Algorithms. By working through these areas, I have built a robust foundation in both computer system fundamentals and the design of efficient software solutions.
 
@@ -41,6 +45,7 @@ This repository follows a progression from understanding **low-level hardware in
 - **Data Structures and Algorithms** take the lessons from lower levels and apply them to build scalable and optimized solutions for complex computational problems.
 - **Numerical Methods** showcases the application of computational techniques to solve scientific and engineering problems.
 - **GPU Computing** demonstrates the power of parallel processing to accelerate data-intensive computations and highlights the importance of performance optimization in modern computing.
+- **AI & ML** Harnessing data-driven intelligence for predictive modeling and decision-making.
 
 ---
 
@@ -53,3 +58,4 @@ Each directory corresponds to one of the five focus areas. Inside each directory
 - **DataStructuresAlgorithms/**: Implementations of common data structures and algorithms.
 - **NumericalMethods/**: Numerical computation projects tackling mathematical problems.
 - **GPUComputing/**: CUDA C programs focusing on parallel computing techniques, with performance measurements and custom kernel implementations.
+- **MachineLearningAI/**: Machine learning models, deep learning experiments, and AI algorithms. (In Progress)
