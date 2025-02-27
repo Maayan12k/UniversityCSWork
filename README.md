@@ -29,7 +29,16 @@ This repository is organized into six main areas:
       - **Vector Multiplication**: High-performance implementations.
       - **Convolution Operations**: Designed to measure and compare performance under varying conditions.
    - Focuses on performance measurements and optimizations for parallel computation.
-6. **Machine Learning & AI**
+
+6. **Database Systems**  
+   - Focused on writing SQL queries and exploring database features.  
+   - Includes:  
+     - **SQL Querying**: Writing complex queries using JOINs, subqueries, window functions, and aggregations.  
+     - **Stored Procedures & Triggers**: Automating tasks and enforcing business rules within the database.  
+     - **Schema Design & Normalization**: Structuring relational databases for efficiency and scalability.  
+     - **Hands-on Experience**: Working with MySQL services.  
+
+7. **Machine Learning & AI**
    - Practical experience with machine learning techniques and theory.
    - Supervised Learning: Implementations of regression, classification, and neural networks.
    - Unsupervised Learning: Clustering techniques and dimensionality reduction.
@@ -45,6 +54,7 @@ This repository follows a progression from understanding **low-level hardware in
 - **Data Structures and Algorithms** take the lessons from lower levels and apply them to build scalable and optimized solutions for complex computational problems.
 - **Numerical Methods** showcases the application of computational techniques to solve scientific and engineering problems.
 - **GPU Computing** demonstrates the power of parallel processing to accelerate data-intensive computations and highlights the importance of performance optimization in modern computing.
+- **Database Systems** focuses on organizing, querying, and optimizing large-scale data storage solutions. 
 - **AI & ML** Harnessing data-driven intelligence for predictive modeling and decision-making.
 
 ---
@@ -58,4 +68,5 @@ Each directory corresponds to one of the five focus areas. Inside each directory
 - **DataStructuresAlgorithms/**: Implementations of common data structures and algorithms.
 - **NumericalMethods/**: Numerical computation projects tackling mathematical problems.
 - **GPUComputing/**: CUDA C programs focusing on parallel computing techniques, with performance measurements and custom kernel implementations.
+- **DatabaseSystems/**: SQL scripts demonstrating query writing and database design.  
 - **MachineLearningAI/**: Machine learning models, deep learning experiments, and AI algorithms. (In Progress)
