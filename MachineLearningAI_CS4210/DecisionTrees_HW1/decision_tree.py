@@ -3,7 +3,6 @@
 # FILENAME: decision_tree.py
 # SPECIFICATION: simple decision tree classifier
 # FOR: CS 4210- Assignment #1
-# TIME SPENT: 20 minutes
 #-----------------------------------------------------------*/
 
 from sklearn import tree
