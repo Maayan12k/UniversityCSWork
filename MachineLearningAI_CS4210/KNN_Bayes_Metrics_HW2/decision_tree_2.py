@@ -33,9 +33,6 @@ for i in range(len(dbTest)):
     XTest.append(row)
     YTest.append(1 if dbTest[i][4] == 'Yes' else 2)
 
-print('XTest:', XTest)
-print('YTest:', YTest)
-
 for ds in dataSets:
 
     dbTraining = []
@@ -78,7 +75,6 @@ for ds in dataSets:
 
         correct_predictions = sum([1 for j in range(len(class_predicted)) if class_predicted[j] == YTest[j]])
         accuracy = correct_predictions / len(YTest)
-        print(f'Accuracy for run {i+1} on {ds}: {accuracy}')
         averageAccuracy += accuracy
     
     averageAccuracy /= 10
