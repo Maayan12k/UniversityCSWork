@@ -1,39 +1,57 @@
 #-------------------------------------------------------------------------
-# AUTHOR: your name
-# FILENAME: title of the source file
-# SPECIFICATION: description of the program
+# AUTHOR: Maayan Israel
+# FILENAME: naive_bayes.py
+# SPECIFICATION: This program reads a csv file and uses the NAIVE BAYES algorithm to predict the class of each instance in the file and ouputs the probabilities of each class for each instance with confidence >= 0.75.
 # FOR: CS 4210- Assignment #2
-# TIME SPENT: how long it took you to complete the assignment
 #-----------------------------------------------------------*/
 
-#IMPORTANT NOTE: DO NOT USE ANY ADVANCED PYTHON LIBRARY TO COMPLETE THIS CODE SUCH AS numpy OR pandas. You have to work here only with standard
-# dictionaries, lists, and arrays
-
-#Importing some Python libraries
+import csv
 from sklearn.naive_bayes import GaussianNB
 
-#Reading the training data in a csv file
-#--> add your Python code here
+db = []
+with open('weather_training.csv', 'r') as csvfile:
+  reader = csv.reader(csvfile)
+  for i, row in enumerate(reader):
+      if i > 0: 
+         db.append(row)
 
-#Transform the original training features to numbers and add them to the 4D array X.
-#For instance Sunny = 1, Overcast = 2, Rain = 3, X = [[3, 1, 1, 2], [1, 3, 2, 2], ...]]
-#--> add your Python code here
+X = []
+Y = []
+for i in range(len(db)):
+    row = [
+        1 if db[i][1] == 'Overcast' else 2 if db[i][1] == 'Rain' else 3,
+        1 if db[i][2] == 'Cool' else 2 if db[i][2] == 'Mild' else 3,
+        1 if db[i][3] == 'Normal' else 2,
+        1 if db[i][4] == 'Strong' else 2
+    ]
+    X.append(row)
+    Y.append(1 if db[i][5] == 'Yes' else 2)
 
-#Transform the original training classes to numbers and add them to the vector Y.
-#For instance Yes = 1, No = 2, so Y = [1, 1, 2, 2, ...]
-#--> add your Python code here
-
-#Fitting the naive bayes to the data
 clf = GaussianNB(var_smoothing=1e-9)
 clf.fit(X, Y)
 
-#Reading the test data in a csv file
-#--> add your Python code here
 
-#Printing the header os the solution
-#--> add your Python code here
+test = []
+with open('weather_test.csv', 'r') as csvfile:
+  reader = csv.reader(csvfile)
+  for i, row in enumerate(reader):
+      if i > 0: 
+         test.append(row)
 
-#Use your test samples to make probabilistic predictions. For instance: clf.predict_proba([[3, 1, 2, 1]])[0]
-#--> add your Python code here
+XTest = []
+for i in range(len(test)):
+    row = [
+        1 if test[i][1] == 'Overcast' else 2 if test[i][1] == 'Rain' else 3,
+        1 if test[i][2] == 'Cool' else 2 if test[i][2] == 'Mild' else 3,
+        1 if test[i][3] == 'Normal' else 2,
+        1 if test[i][4] == 'Strong' else 2
+    ]
+    XTest.append(row)
 
-
+print(f"{'Day':<6} {'Outlook':<10} {'Temperature':<12} {'Humidity':<8} {'Wind':<6} {'PlayTennis':<12} {'Confidence':<10}")
+for i in range(len(XTest)):
+    result = clf.predict_proba([XTest[i]])[0]
+    maxVal = max(result)
+    if maxVal >= 0.75:
+        playTennis = "Yes" if maxVal == result[0] else "No"
+        print(f"{test[i][0]:<6} {test[i][1]:<10} {test[i][2]:<12} {test[i][3]:<8} {test[i][4]:<6} {playTennis:<12} {maxVal:<10.3f}")
