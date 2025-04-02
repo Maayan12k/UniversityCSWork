@@ -54,14 +54,3 @@ for learning_rate in n:
             elif accuracy > highest_mlp_accuracy:
                 highest_mlp_accuracy = accuracy
                 print(f"Highest {model} accuracy so far: {accuracy:.2f}, Parameters: learning rate={learning_rate}, shuffle={isShuffled}")
-
-
-
-
-
-
-
-
-
-
-
