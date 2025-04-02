@@ -50,7 +50,7 @@ for learning_rate in n:
             model = "Perceptron" if isPerceptron else "MLP" 
             if isPerceptron and accuracy > highest_perceptron_accuracy:
                 highest_perceptron_accuracy = accuracy
-                print(f"Highest {model} accuracy so far: {accuracy:.2f}, Parameters: learning rate={learning_rate}, shuffle={isShuffled}")
+                print(f"Highest {model} accuracy so far: {accuracy:.4f}, Parameters: learning rate={learning_rate}, shuffle={isShuffled}")
             elif accuracy > highest_mlp_accuracy:
                 highest_mlp_accuracy = accuracy
-                print(f"Highest {model} accuracy so far: {accuracy:.2f}, Parameters: learning rate={learning_rate}, shuffle={isShuffled}")
+                print(f"Highest {model} accuracy so far: {accuracy:.4f}, Parameters: learning rate={learning_rate}, shuffle={isShuffled}")
