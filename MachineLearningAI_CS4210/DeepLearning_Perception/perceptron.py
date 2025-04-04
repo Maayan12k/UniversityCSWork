@@ -47,10 +47,9 @@ for learning_rate in n:
 
             accuracy = number_of_correct_predictions / 1797
 
-            model = "Perceptron" if isPerceptron else "MLP" 
             if isPerceptron and accuracy > highest_perceptron_accuracy:
                 highest_perceptron_accuracy = accuracy
-                print(f"Highest {model} accuracy so far: {accuracy:.4f}, Parameters: learning rate={learning_rate}, shuffle={isShuffled}")
+                print(f"Highest Perceptron accuracy so far: {accuracy:.4f}, Parameters: learning rate={learning_rate}, shuffle={isShuffled}")
             elif accuracy > highest_mlp_accuracy:
                 highest_mlp_accuracy = accuracy
-                print(f"Highest {model} accuracy so far: {accuracy:.4f}, Parameters: learning rate={learning_rate}, shuffle={isShuffled}")
+                print(f"Highest MLP accuracy so far: {accuracy:.4f}, Parameters: learning rate={learning_rate}, shuffle={isShuffled}")
