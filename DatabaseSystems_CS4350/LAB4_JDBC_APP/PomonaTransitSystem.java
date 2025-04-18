@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
 
-public class MySQLConnection {
+public class PomonaTransitSystem {
 
     static String url = "jdbc:mysql://localhost:3306/LAB4";
     static String username = "testLabUser";
