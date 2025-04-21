@@ -36,7 +36,7 @@ public class PomonaTransitSystem {
             stmt.executeUpdate("DROP TABLE IF EXISTS Trip;");
             // re‐enable FK checks
             stmt.executeUpdate("SET FOREIGN_KEY_CHECKS = 1;");
-            System.out.println("All tables dropped.");
+            System.out.println("\nAll tables dropped.");
         }
     }
 
@@ -75,8 +75,8 @@ public class PomonaTransitSystem {
                             "  BusID INT," +
                             "  PRIMARY KEY (TripNumber, Date, ScheduledStartTime)," +
                             "  FOREIGN KEY (TripNumber) REFERENCES Trip(TripNumber)," +
-                            "  FOREIGN KEY (DriverName) REFERENCES Driver(DriverName)," +
-                            "  FOREIGN KEY (BusID) REFERENCES Bus(BusID)" +
+                            "  FOREIGN KEY (DriverName) REFERENCES Driver(DriverName) ON UPDATE CASCADE," +
+                            "  FOREIGN KEY (BusID) REFERENCES Bus(BusID) ON DELETE SET NULL" +
                             ");");
             stmt.executeUpdate(
                     "CREATE TABLE IF NOT EXISTS TripStopInfo (" +
@@ -124,6 +124,7 @@ public class PomonaTransitSystem {
             stmt.executeUpdate(
                     "INSERT INTO Driver (DriverName, DriverTelephoneNumber) VALUES " +
                             "('John Doe', '555-1234'), " +
+                            "('Jorge Freeman', '535-5678'), " +
                             "('Jane Smith', '555-5678');");
             // Stop
             stmt.executeUpdate(
@@ -157,38 +158,347 @@ public class PomonaTransitSystem {
             System.out.println("Dummy data populated successfully.");
         }
     }
+
     /*
      * Helper Functions END
      */
 
     public static void numberOne() {
-        // Implement the logic for viewing all trips based on a Source, Destination, and
-        // Date
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Please enter the source:");
+        String sourceInput = scan.nextLine();
+        System.out.println("Please enter the destination:");
+        String destinationInput = scan.nextLine();
+        System.out.println("Please enter the date (YYYY-MM-DD):");
+        String dateInput = scan.nextLine();
+
+        String sql = "SELECT t.TripNumber, " +
+                "       toff.ScheduledStartTime, " +
+                "       toff.ScheduledArrivalTime, " +
+                "       toff.DriverName, " +
+                "       toff.BusID, " +
+                "       toff.Date " +
+                "FROM Trip AS t " +
+                "JOIN TripOffering AS toff " +
+                "  ON t.TripNumber = toff.TripNumber " +
+                "WHERE t.StartLocationName = '" + sourceInput + "' " +
+                "  AND t.DestinationName   = '" + destinationInput + "' " +
+                "  AND toff.Date           = '" + dateInput + "' " +
+                "ORDER BY toff.ScheduledStartTime;";
+
+        try {
+            resultSet = executeStatement(sql);
+
+            while (resultSet.next()) {
+                String tripNumber = resultSet.getString("TripNumber");
+                String busNumber = resultSet.getString("BusID");
+                String driverName = resultSet.getString("DriverName");
+                String date = resultSet.getString("Date");
+
+                System.out.println("Trip Number: " + tripNumber + ", Bus Number: " + busNumber + ", Driver Name: "
+                        + driverName + ", Date: " + date);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("SQL error: " + e.getMessage());
+        }
+        scan.close();
     }
 
     public static void numberTwo() {
-        // Implement the logic for editing a schedule of a Trip Offering
+        Scanner scan = new Scanner(System.in);
+
+        int choice = 0;
+        boolean invalidInput = true;
+        while (invalidInput) {
+            System.out.println("What would you like to do?");
+            System.out.println("1. Delete a trip.");
+            System.out.println("2. Add a set of trip offerings.");
+            System.out.println("3. Change the driver for a trip offering.");
+            System.out.println("4. Change the bus for a given trip offering");
+
+            System.out.print("Enter your choice: ");
+            choice = scan.nextInt();
+
+            if (choice <= 7 && choice >= 1) {
+                invalidInput = false;
+            } else {
+                System.out.println("Invalid input. Please try again.");
+            }
+        }
+
+        switch (choice) {
+            case 1:
+                System.out.println("Please enter the trip number you would like to delete:");
+                System.out.print("Enter your choice: ");
+                int tripNumber = scan.nextInt();
+                String sql = "DELETE FROM TripOffering WHERE TripNumber = " + tripNumber + ";";
+
+                try (Statement stmt = connection.createStatement()) {
+                    int rowsAffected = stmt.executeUpdate(sql);
+
+                    if (rowsAffected > 0) {
+                        System.out.println("Trip deleted successfully.");
+                    } else {
+                        System.out.println("No trip found with that TripNumber.");
+                    }
+
+                } catch (SQLException e) {
+                    System.err.println("SQL error: " + e.getMessage());
+                }
+                break;
+            case 2:
+                // Implement the logic for adding a set of trip offerings
+                break;
+            case 3:
+                System.out.print("Please enter the trip number you would like to change the driver: ");
+                tripNumber = scan.nextInt();
+                scan.nextLine();
+
+                System.out.print("Enter the trip date (YYYY-MM-DD): ");
+                String tripDate = scan.next();
+                scan.nextLine();
+
+                System.out.print("Enter the scheduled start time (HH:MM:SS): ");
+                String startTime = scan.nextLine();
+
+                System.out.print("Please enter the new driver name: ");
+                String newDriverName = scan.nextLine();
+
+                sql = "UPDATE TripOffering SET DriverName = '" + newDriverName + "' " +
+                        " WHERE TripNumber = " + tripNumber +
+                        " AND Date = '" + tripDate + "'" +
+                        " AND ScheduledStartTime = '" + startTime + "';";
+
+                try (Statement stmt = connection.createStatement()) {
+                    int rowsAffected = stmt.executeUpdate(sql);
+
+                    if (rowsAffected > 0) {
+                        System.out.println("Trip updated successfully.");
+                    } else {
+                        System.out.println("No trip found with that TripNumber.");
+                    }
+
+                } catch (SQLException e) {
+                    System.err.println("SQL error: " + e.getMessage());
+                }
+                break;
+            case 4:
+                System.out.print("Please enter the trip number you would like to change the bus: ");
+                tripNumber = scan.nextInt();
+                scan.nextLine();
+
+                System.out.print("Enter the trip date (YYYY-MM-DD): ");
+                tripDate = scan.next();
+                scan.nextLine();
+
+                System.out.print("Enter the scheduled start time (HH:MM:SS): ");
+                startTime = scan.nextLine();
+
+                System.out.print("Please enter the new Bus's ID: ");
+                String newBusId = scan.nextLine();
+
+                sql = "UPDATE TripOffering SET BusID = '" + newBusId + "' " +
+                        " WHERE TripNumber = " + tripNumber +
+                        " AND Date = '" + tripDate + "'" +
+                        " AND ScheduledStartTime = '" + startTime + "';";
+
+                try (Statement stmt = connection.createStatement()) {
+                    int rowsAffected = stmt.executeUpdate(sql);
+
+                    if (rowsAffected > 0) {
+                        System.out.println("Trip updated successfully.");
+                    } else {
+                        System.out.println("No trip found with that TripNumber.");
+                    }
+
+                } catch (SQLException e) {
+                    System.err.println("SQL error: " + e.getMessage());
+                }
+                break;
+        }
+
+        scan.close();
     }
 
     public static void numberThree() {
-        // Implement the logic for displaying the stops for a given Trip
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Please enter the Trip Number:");
+        int tripNumber = scan.nextInt();
+
+        String sql = "SELECT Stop.StopNumber, " +
+                "       Stop.StopAddress, " +
+                "       TripStopInfo.SequenceNumber, " +
+                "       TripStopInfo.DrivingTime " +
+                "FROM TripStopInfo " +
+                "JOIN Stop ON TripStopInfo.StopNumber = Stop.StopNumber " +
+                "WHERE TripStopInfo.TripNumber = " + tripNumber + ";";
+
+        try {
+            resultSet = executeStatement(sql);
+
+            System.out.println("Stops for Trip Number " + tripNumber + ":");
+            while (resultSet.next()) {
+                String sequenceNumber = resultSet.getString("SequenceNumber");
+                String stopNumber = resultSet.getString("StopNumber");
+                String stopAddress = resultSet.getString("StopAddress");
+                String drivingTime = resultSet.getString("DrivingTime");
+
+                System.out.println("Stop Number: " + stopNumber + ", Stop Address: " + stopAddress +
+                        ", Sequence Number: " + sequenceNumber + ", Driving Time: " + drivingTime);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("SQL error: " + e.getMessage());
+        }
+        scan.close();
     }
 
     public static void numberFour() {
-        // Implement the logic for displaying the weekly schedule of a given driver and
-        // date
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Please enter the Driver Name:");
+        String driverName = scan.nextLine();
+
+        System.out.print("Enter the trip date (YYYY-MM-DD): ");
+        String tripDate = scan.next();
+        scan.nextLine();
+
+        String sql = "SELECT TF.BusID, " +
+                "TF.ScheduledStartTime, " +
+                "T.StartLocationName, " +
+                "T.DestinationName " +
+                "FROM TripOffering TF " +
+                "JOIN Trip T ON T.TripNumber = TF.TripNumber " +
+                "WHERE TF.DriverName = '" + driverName + "' " +
+                "AND TF.Date = '" + tripDate + "';";
+
+        try {
+            resultSet = executeStatement(sql);
+
+            System.out.println("Schedule for driver: " + driverName);
+            while (resultSet.next()) {
+                System.out.println("" + resultSet.getString("BusID") + resultSet.getString("ScheduledStartTime")
+                        + resultSet.getString("StartLocationName") + resultSet.getString("DestinationName"));
+
+            }
+
+        } catch (SQLException e) {
+            System.err.println("SQL error: " + e.getMessage());
+        }
+        scan.close();
     }
 
     public static void numberFive() {
-        // Implement the logic for adding a driver to the system
+        // Implement the logic for adding a drive to the system
     }
 
     public static void numberSix() {
-        // Implement the logic for adding a bus to the system
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Please enter the bus ID:");
+        int busID = scan.nextInt();
+
+        System.out.println("Please enter the bus model:");
+        String busModel = scan.nextLine();
+
+        System.out.print("Enter the year of the bus: ");
+        int busYear = scan.nextInt();
+        scan.nextLine();
+
+        String sql = "INSERT INTO Bus (BusID, Model, Year) VALUES (" +
+                busID + ", '" +
+                busModel + "', " +
+                busYear + ")";
+
+        try (Statement stmt = connection.createStatement()) {
+            int rowsAffected = stmt.executeUpdate(sql);
+
+            if (rowsAffected > 0) {
+                System.out.println("Bus inserted successfully.");
+            } else {
+                System.out.println("Bus was not inserted sucessfully.");
+            }
+
+        } catch (SQLException e) {
+            System.err.println("SQL error: " + e.getMessage());
+        }
+        scan.close();
     }
 
     public static void numberSeven() {
-        // Implement the logic for deleting a bus from the system
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Please enter the bus ID for you bus you want to delete:");
+        int busID = scan.nextInt();
+
+        String sql = "DELETE FROM Bus WHERE BusID = " + busID + ";";
+
+        try (Statement stmt = connection.createStatement()) {
+            int rowsAffected = stmt.executeUpdate(sql);
+
+            if (rowsAffected > 0) {
+                System.out.println("Bus deleted successfully.");
+            } else {
+                System.out.println("Bus does not exist.");
+            }
+
+        } catch (SQLException e) {
+            System.err.println("SQL error: " + e.getMessage());
+        }
+        scan.close();
+    }
+
+    public static void numberEight() {
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Record the actual stop info.");
+        System.out.println("Please enter the Trip Number:");
+        int tripNumber = scan.nextInt();
+        scan.nextLine(); // consume leftover newline
+
+        System.out.print("Enter the trip date (YYYY-MM-DD): ");
+        String tripDate = scan.nextLine();
+
+        System.out.println("Please enter the stop number:");
+        int stopNumber = scan.nextInt();
+        scan.nextLine(); // consume leftover newline
+
+        System.out.print("Enter the scheduled start time (HH:MM:SS): ");
+        String startTime = scan.nextLine();
+
+        System.out.print("Enter the scheduled arrival time (HH:MM:SS): ");
+        String arrivalTime = scan.nextLine();
+
+        System.out.print("Enter the actual start time (HH:MM:SS): ");
+        String actualStartTime = scan.nextLine();
+
+        System.out.print("Enter the actual arrival time (HH:MM:SS): ");
+        String actualArrivalTime = scan.nextLine();
+
+        System.out.println("Please enter the number of passengers in:");
+        int passengersIn = scan.nextInt();
+
+        System.out.println("Please enter the number of passengers out:");
+        int passengersOut = scan.nextInt();
+
+        String sql = "INSERT INTO ActualTripStopInfo " +
+                "(TripNumber, Date, ScheduledStartTime, StopNumber," +
+                "ScheduledArrivalTime, ActualStartTime, ActualArrivalTime, NumberOfPassengerIn," +
+                "NumberOfPassengerOut) VALUES (" +
+                tripNumber + ", '" + tripDate + "', '" + startTime + "', " + stopNumber + ", '" +
+                arrivalTime + "', '" + actualStartTime + "', '" + actualArrivalTime + "', " +
+                passengersIn + ", " + passengersOut + ")";
+
+        try (Statement stmt = connection.createStatement()) {
+            int rowsAffected = stmt.executeUpdate(sql);
+
+            if (rowsAffected > 0) {
+                System.out.println("Actual Stop info inserted sucessfully.");
+            } else {
+                System.out.println("Actual Stop info not inserted successfully.");
+            }
+
+        } catch (SQLException e) {
+            System.err.println("SQL error: " + e.getMessage());
+        }
+        scan.close();
     }
 
     public static void main(String[] args) {
@@ -226,11 +536,13 @@ public class PomonaTransitSystem {
                 System.out.println("5. Add a drive to the system");
                 System.out.println("6. Add a bus to the system");
                 System.out.println("7. Delete a bus from the system");
+                System.out.println("8. Record actual data for a given trip offering");
 
                 System.out.print("Enter your choice: ");
+
                 choice = scan.nextInt();
 
-                if (choice <= 7 && choice >= 1) {
+                if (choice >= 1 && choice <= 8) {
                     invalidInput = false;
                 } else {
                     System.out.println("Invalid input. Please try again.");
@@ -258,6 +570,9 @@ public class PomonaTransitSystem {
                     break;
                 case 7:
                     numberSeven();
+                    break;
+                case 8:
+                    numberEight();
                     break;
             }
 
