@@ -163,8 +163,7 @@ public class PomonaTransitSystem {
      * Helper Functions END
      */
 
-    public static void numberOne() {
-        Scanner scan = new Scanner(System.in);
+    public static void numberOne(Scanner scan) {
         System.out.println("Please enter the source:");
         String sourceInput = scan.nextLine();
         System.out.println("Please enter the destination:");
@@ -202,12 +201,9 @@ public class PomonaTransitSystem {
         } catch (SQLException e) {
             System.err.println("SQL error: " + e.getMessage());
         }
-        scan.close();
     }
 
-    public static void numberTwo() {
-        Scanner scan = new Scanner(System.in);
-
+    public static void numberTwo(Scanner scan) {
         int choice = 0;
         boolean invalidInput = true;
         while (invalidInput) {
@@ -248,12 +244,8 @@ public class PomonaTransitSystem {
                 }
                 break;
             case 2:
-                // Implement the logic for adding a set of trip offerings
-                break;
-            case 3:
-                System.out.print("Please enter the trip number you would like to change the driver: ");
+                System.out.println("Please enter the Trip Number:");
                 tripNumber = scan.nextInt();
-                scan.nextLine();
 
                 System.out.print("Enter the trip date (YYYY-MM-DD): ");
                 String tripDate = scan.next();
@@ -261,6 +253,51 @@ public class PomonaTransitSystem {
 
                 System.out.print("Enter the scheduled start time (HH:MM:SS): ");
                 String startTime = scan.nextLine();
+
+                System.out.print("Enter the scheduled arrival time (HH:MM:SS): ");
+                String arrivalTime = scan.nextLine();
+
+                System.out.print("Please enter the new driver name: ");
+                String driverName = scan.nextLine();
+
+                System.out.print("Please enter the new Bus's ID: ");
+                String busID = scan.nextLine();
+
+                sql = "INSERT INTO TripOffering (TripNumber, Date, ScheduledStartTime, ScheduledArrivalTime, DriverName, BusID)"
+                        +
+                        " VALUES (" +
+                        tripNumber + ", '" +
+                        tripDate + "', '" +
+                        startTime + "', '" +
+                        arrivalTime + "', '" +
+                        driverName + "', " +
+                        busID + ")";
+
+                try (Statement stmt = connection.createStatement()) {
+                    int rowsAffected = stmt.executeUpdate(sql);
+
+                    if (rowsAffected > 0) {
+                        System.out.println("Trip Offering inserted successfully.");
+                    } else {
+                        System.out.println("Trip Offering was not inserted sucessfully.");
+                    }
+
+                } catch (SQLException e) {
+                    System.err.println("SQL error: " + e.getMessage());
+                }
+
+                break;
+            case 3:
+                System.out.print("Please enter the trip number you would like to change the driver: ");
+                tripNumber = scan.nextInt();
+                scan.nextLine();
+
+                System.out.print("Enter the trip date (YYYY-MM-DD): ");
+                tripDate = scan.next();
+                scan.nextLine();
+
+                System.out.print("Enter the scheduled start time (HH:MM:SS): ");
+                startTime = scan.nextLine();
 
                 System.out.print("Please enter the new driver name: ");
                 String newDriverName = scan.nextLine();
@@ -317,12 +354,9 @@ public class PomonaTransitSystem {
                 }
                 break;
         }
-
-        scan.close();
     }
 
-    public static void numberThree() {
-        Scanner scan = new Scanner(System.in);
+    public static void numberThree(Scanner scan) {
         System.out.println("Please enter the Trip Number:");
         int tripNumber = scan.nextInt();
 
@@ -351,11 +385,9 @@ public class PomonaTransitSystem {
         } catch (SQLException e) {
             System.err.println("SQL error: " + e.getMessage());
         }
-        scan.close();
     }
 
-    public static void numberFour() {
-        Scanner scan = new Scanner(System.in);
+    public static void numberFour(Scanner scan) {
         System.out.println("Please enter the Driver Name:");
         String driverName = scan.nextLine();
 
@@ -377,28 +409,49 @@ public class PomonaTransitSystem {
 
             System.out.println("Schedule for driver: " + driverName);
             while (resultSet.next()) {
-                System.out.println("" + resultSet.getString("BusID") + resultSet.getString("ScheduledStartTime")
-                        + resultSet.getString("StartLocationName") + resultSet.getString("DestinationName"));
+                System.out.println("" + resultSet.getString("BusID") + " " + resultSet.getString("ScheduledStartTime")
+                        + " "
+                        + resultSet.getString("StartLocationName") + " " + resultSet.getString("DestinationName"));
 
             }
 
         } catch (SQLException e) {
             System.err.println("SQL error: " + e.getMessage());
         }
-        scan.close();
     }
 
-    public static void numberFive() {
-        // Implement the logic for adding a drive to the system
+    public static void numberFive(Scanner scan) {
+        System.out.println("Please enter the Driver Name:");
+        String driverName = scan.nextLine();
+
+        System.out.println("Please enter the driver's phone number:");
+        String driverNumber = scan.nextLine();
+
+        String sql = "INSERT INTO Driver (DriverName, DriverTelephoneNumber) VALUES ('" +
+                driverName + "', '" +
+                driverNumber + "');";
+
+        try (Statement stmt = connection.createStatement()) {
+            int rowsAffected = stmt.executeUpdate(sql);
+
+            if (rowsAffected > 0) {
+                System.out.println("Driver inserted successfully.");
+            } else {
+                System.out.println("Driver was not inserted sucessfully.");
+            }
+
+        } catch (SQLException e) {
+            System.err.println("SQL error: " + e.getMessage());
+        }
     }
 
-    public static void numberSix() {
-        Scanner scan = new Scanner(System.in);
+    public static void numberSix(Scanner scan) {
         System.out.println("Please enter the bus ID:");
         int busID = scan.nextInt();
 
         System.out.println("Please enter the bus model:");
-        String busModel = scan.nextLine();
+        String busModel = scan.next();
+        scan.nextLine();
 
         System.out.print("Enter the year of the bus: ");
         int busYear = scan.nextInt();
@@ -421,11 +474,9 @@ public class PomonaTransitSystem {
         } catch (SQLException e) {
             System.err.println("SQL error: " + e.getMessage());
         }
-        scan.close();
     }
 
-    public static void numberSeven() {
-        Scanner scan = new Scanner(System.in);
+    public static void numberSeven(Scanner scan) {
         System.out.println("Please enter the bus ID for you bus you want to delete:");
         int busID = scan.nextInt();
 
@@ -443,22 +494,20 @@ public class PomonaTransitSystem {
         } catch (SQLException e) {
             System.err.println("SQL error: " + e.getMessage());
         }
-        scan.close();
     }
 
-    public static void numberEight() {
-        Scanner scan = new Scanner(System.in);
+    public static void numberEight(Scanner scan) {
         System.out.println("Record the actual stop info.");
         System.out.println("Please enter the Trip Number:");
         int tripNumber = scan.nextInt();
-        scan.nextLine(); // consume leftover newline
+        scan.nextLine();
 
         System.out.print("Enter the trip date (YYYY-MM-DD): ");
         String tripDate = scan.nextLine();
 
         System.out.println("Please enter the stop number:");
         int stopNumber = scan.nextInt();
-        scan.nextLine(); // consume leftover newline
+        scan.nextLine();
 
         System.out.print("Enter the scheduled start time (HH:MM:SS): ");
         String startTime = scan.nextLine();
@@ -498,7 +547,18 @@ public class PomonaTransitSystem {
         } catch (SQLException e) {
             System.err.println("SQL error: " + e.getMessage());
         }
-        scan.close();
+    }
+
+    private static int promptInt(Scanner scan, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String line = scan.nextLine().trim();
+            try {
+                return Integer.parseInt(line);
+            } catch (NumberFormatException e) {
+                System.out.println("→ Please enter a valid integer.");
+            }
+        }
     }
 
     public static void main(String[] args) {
@@ -524,56 +584,53 @@ public class PomonaTransitSystem {
 
             System.out.println("Welcome to Pomona Transit System!");
 
-            int choice = 0;
-            boolean invalidInput = true;
-            while (invalidInput) {
-                System.out.println("Please enter your desired choice:");
+            boolean wantsToContinue = true;
+            while (wantsToContinue) {
 
                 System.out.println("1. View all trips based on a Source, Destination, and Date");
                 System.out.println("2. Edit a schedule of a Trip Offering");
                 System.out.println("3. Display the stops for a given Trip");
                 System.out.println("4. Display the weekly shcedule of a given driver and date.");
-                System.out.println("5. Add a drive to the system");
+                System.out.println("5. Add a driver to the system");
                 System.out.println("6. Add a bus to the system");
                 System.out.println("7. Delete a bus from the system");
                 System.out.println("8. Record actual data for a given trip offering");
+                System.out.println("9. Exit");
 
-                System.out.print("Enter your choice: ");
+                int choice = promptInt(scan, "Enter your choice: ");
 
-                choice = scan.nextInt();
+                switch (choice) {
+                    case 1:
+                        numberOne(scan);
+                        break;
+                    case 2:
+                        numberTwo(scan);
+                        break;
+                    case 3:
+                        numberThree(scan);
+                        break;
+                    case 4:
+                        numberFour(scan);
+                        break;
+                    case 5:
+                        numberFive(scan);
+                        break;
+                    case 6:
+                        numberSix(scan);
+                        break;
+                    case 7:
+                        numberSeven(scan);
+                        break;
+                    case 8:
+                        numberEight(scan);
+                        break;
+                    case 9:
+                        wantsToContinue = false;
+                        break;
+                    default:
+                        System.out.println("Invalid choice. Please pick 1–9.");
 
-                if (choice >= 1 && choice <= 8) {
-                    invalidInput = false;
-                } else {
-                    System.out.println("Invalid input. Please try again.");
                 }
-            }
-
-            switch (choice) {
-                case 1:
-                    numberOne();
-                    break;
-                case 2:
-                    numberTwo();
-                    break;
-                case 3:
-                    numberThree();
-                    break;
-                case 4:
-                    numberFour();
-                    break;
-                case 5:
-                    numberFive();
-                    break;
-                case 6:
-                    numberSix();
-                    break;
-                case 7:
-                    numberSeven();
-                    break;
-                case 8:
-                    numberEight();
-                    break;
             }
 
         } catch (ClassNotFoundException e) {
