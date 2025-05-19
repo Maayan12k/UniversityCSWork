@@ -69,4 +69,4 @@ Each directory corresponds to one of the seven focus areas. Inside each director
 - **NumericalMethods/**: Numerical computation projects tackling mathematical problems.
 - **GPUComputing/**: CUDA C programs focusing on parallel computing techniques, with performance measurements and custom kernel implementations.
 - **DatabaseSystems/**: SQL scripts demonstrating query writing and database design.  
-- **MachineLearningAI/**: Machine learning models, deep learning experiments, and AI algorithms. (In Progress)
+- **MachineLearningAI/**: Machine learning models, deep learning experiments, and AI algorithms. 
