@@ -22,6 +22,10 @@ This repository is organized into seven main areas:
    - Focuses on solving mathematical problems computationally, using techniques such as interpolation, root finding, and solving systems of equations.
    - Includes iterative methods, matrix operations, and polynomial manipulation.
 
+5. **System Programming**
+   - Implementations of basic C programs which touch on lower level system concepts such as socket programming and file processing.
+   - Helped gain insight into my first lower level language and practice into application of data structures and algorithms.
+
 5. **GPU Computing**
    - Practical experience with massively parallel programming using CUDA C, executed on the NCSA Delta supercomputer node.
    - Custom CUDA kernels for:
