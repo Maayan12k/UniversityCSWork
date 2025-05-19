@@ -23,7 +23,7 @@ This repository is organized into eight main areas:
    - Includes iterative methods, matrix operations, and polynomial manipulation.
 
 5. **Systems Programming**
-   - Implementations of basic C programs which touch on lower level system concepts such as socket programming and file processing.
+   - Implementations of basic C programs which touch on lower level system concepts such as socket programming, multithreading, and file processing.
    - Helped gain insight into my first lower level language and practice into application of data structures and algorithms.
 
 5. **GPU Computing**
