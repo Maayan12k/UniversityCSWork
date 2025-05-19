@@ -4,7 +4,7 @@ This repository showcases a collection of projects and assignments spanning core
 
 ## Repository Overview
 
-This repository is organized into six main areas:
+This repository is organized into seven main areas:
 
 1. **Assembly Language**
    - Low-level programming using assembly language, focusing on direct interaction with hardware components.
@@ -61,7 +61,7 @@ This repository follows a progression from understanding **low-level hardware in
 
 ## How to Navigate
 
-Each directory corresponds to one of the five focus areas. Inside each directory, you'll find code implementations and detailed explanations.
+Each directory corresponds to one of the seven focus areas. Inside each directory, you'll find code implementations and detailed explanations.
 
 - **AssemblyLanguage/**: Contains assembly programs demonstrating fundamental hardware interactions.
 - **ComputerArchitecture/**: Projects exploring the design and performance of computer systems.
