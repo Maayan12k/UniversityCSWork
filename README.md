@@ -72,7 +72,7 @@ Each directory corresponds to one of the seven focus areas. Inside each director
 - **ComputerArchitecture/**: Projects exploring the design and performance of computer systems.
 - **DataStructuresAlgorithms/**: Implementations of common data structures and algorithms.
 - **NumericalMethods/**: Numerical computation projects tackling mathematical problems.
-- **SystemsProgramming/**: 
+- **SystemsProgramming/**: C programs showcases basic lower level system concepts such as multithreading, socket programming, and text processing.
 - **GPUComputing/**: CUDA C programs focusing on parallel computing techniques, with performance measurements and custom kernel implementations.
 - **DatabaseSystems/**: SQL scripts demonstrating query writing and database design.  
 - **MachineLearningAI/**: Machine learning models, deep learning experiments, and AI algorithms. 
