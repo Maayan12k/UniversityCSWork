@@ -4,7 +4,7 @@ This repository showcases a collection of projects and assignments spanning core
 
 ## Repository Overview
 
-This repository is organized into seven main areas:
+This repository is organized into eight main areas:
 
 1. **Assembly Language**
    - Low-level programming using assembly language, focusing on direct interaction with hardware components.
@@ -22,7 +22,7 @@ This repository is organized into seven main areas:
    - Focuses on solving mathematical problems computationally, using techniques such as interpolation, root finding, and solving systems of equations.
    - Includes iterative methods, matrix operations, and polynomial manipulation.
 
-5. **System Programming**
+5. **Systems Programming**
    - Implementations of basic C programs which touch on lower level system concepts such as socket programming and file processing.
    - Helped gain insight into my first lower level language and practice into application of data structures and algorithms.
 
@@ -57,6 +57,7 @@ This repository follows a progression from understanding **low-level hardware in
 - **Computer Architecture** bridges the gap between software and hardware, providing a deeper understanding of how code executes on real machines.
 - **Data Structures and Algorithms** take the lessons from lower levels and apply them to build scalable and optimized solutions for complex computational problems.
 - **Numerical Methods** showcases the application of computational techniques to solve scientific and engineering problems.
+- **Systems Programming** exhibits practical usage of a lower level programming language and systems programming concepts.
 - **GPU Computing** demonstrates the power of parallel processing to accelerate data-intensive computations and highlights the importance of performance optimization in modern computing.
 - **Database Systems** focuses on organizing, querying, and optimizing large-scale data storage solutions. 
 - **AI & ML** Harnessing data-driven intelligence for predictive modeling and decision-making.
@@ -71,6 +72,7 @@ Each directory corresponds to one of the seven focus areas. Inside each director
 - **ComputerArchitecture/**: Projects exploring the design and performance of computer systems.
 - **DataStructuresAlgorithms/**: Implementations of common data structures and algorithms.
 - **NumericalMethods/**: Numerical computation projects tackling mathematical problems.
+- **Systems
 - **GPUComputing/**: CUDA C programs focusing on parallel computing techniques, with performance measurements and custom kernel implementations.
 - **DatabaseSystems/**: SQL scripts demonstrating query writing and database design.  
 - **MachineLearningAI/**: Machine learning models, deep learning experiments, and AI algorithms. 
