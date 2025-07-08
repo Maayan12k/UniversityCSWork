@@ -66,7 +66,7 @@ This repository follows a progression from understanding **low-level hardware in
 
 ## How to Navigate
 
-Each directory corresponds to one of the seven focus areas. Inside each directory, you'll find code implementations and detailed explanations.
+Each directory corresponds to one of the eight focus areas. Inside each directory, you'll find code implementations and detailed explanations.
 
 - **AssemblyLanguage/**: Contains assembly programs demonstrating fundamental hardware interactions.
 - **ComputerArchitecture/**: Projects exploring the design and performance of computer systems.
