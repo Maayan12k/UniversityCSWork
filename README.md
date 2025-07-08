@@ -24,7 +24,7 @@ This repository is organized into eight main areas:
 
 5. **Systems Programming**
    - Implementations of basic C programs which touch on lower level system concepts such as socket programming, multithreading, and file processing.
-   - Helped gain insight into my first lower level language and practice into application of data structures and algorithms.
+   - Helped gain insight into my first lower level language and shows application of data structures and algorithms.
 
 5. **GPU Computing**
    - Practical experience with massively parallel programming using CUDA C, executed on the NCSA Delta supercomputer node.
